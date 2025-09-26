@@ -1,4 +1,4 @@
-# SIGMA-analysis: A Repository for Analyzing Generated Instructions
+# LASER-analysis: A Repository for Analyzing Instructions
 
 This repository contains code and data for analyzing instruction-following data.
 
@@ -8,8 +8,10 @@ Evaluated on the validation split, the classifier gets 96% macro F1-score.
 - We use [Deita complexity scorer](https://huggingface.co/hkust-nlp/deita-complexity-scorer) and 
 [Deita quality scorer](https://huggingface.co/hkust-nlp/deita-quality-scorer) for scoring (instruction) complexity and 
 (response) quality w.r.t a given instruction
-- We use [InsTagger](https://huggingface.co/OFA-Sys/InsTagger) for tagging instructions, following 
-[this paper](https://arxiv.org/pdf/2308.07074)
+- We use a [PRM](https://huggingface.co/Qwen/Qwen2.5-Math-PRM-7B) to score math response data.
+- We use our custom IF-Quality scorer (based on [Qwen/Qwen3-14B](https://huggingface.co/Qwen/Qwen3-14B)) to score how well a response adheres to constraints given by an instruction.
+- We use our custom Code-Quality scorer (based on [Qwen/Qwen3-14B](https://huggingface.co/Qwen/Qwen3-14B)) to score the quality of a code-related response to a given instruction.
+- We use our custom [difficulty scorer](https://huggingface.co/IIS-NLP-internal/qwen3-8B-difficulty-scorer-v2) to score how challenging given instructions are.
 - We use [vllm](https://github.com/vllm-project/vllm) for faster inference
 
 ### Running Analysis
