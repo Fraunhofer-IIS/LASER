@@ -1,5 +1,8 @@
 # LASER-analysis: A Repository for Analyzing Instructions
 
+![Description](../assets/LASER_illustration_analysis.png)
+
+
 This repository contains code and data for analyzing instruction-following data.
 
 - We use [SetFit](https://github.com/huggingface/setfit) for efficient few-shot learning with Sentence Transformers
@@ -94,36 +97,24 @@ List of available datasets below.
 ![Alt text](correlations/resplen_quality.png?raw=true "Title")
 ![Alt text](correlations/numtag_complexity.png?raw=true "Title")
 
-#### List of Analyzed Datasets
-- sigma_v1
-- sigma_v2_evol
-- sigma_v3
-- deita_10k
-- no_robots
-- flan_v2_cot
-- dolly_15k
-- alpaca
-- alpaca_gpt4
-- lima
-- longform
-- bactrian-x_en
-- wizardlm_evol_instruct
-- wizardlm_orca
-- sharegpt
-- oasst2
-- ultrachat
 
 #### Add a new dataset to be analyzed
-1. Add a dataset processing in ``utils.py`` with `dataset_name` as the key, making sure that 
-`instructions` contains all user requests in the dataset and `responses` contains the corresponding 
-system responses. Please add also `dataset_title` to show the dataset name on the charts, e.g., 
-```
-    elif dataset_name == "longform":
-        dataset_title = "LongForm"
-        dataset = load_dataset("akoksal/LongForm")  # from Huggingface Hub
-        longform_train = dataset["train"]
-        instructions = [sample["input"] for sample in longform_train]
-        responses = [sample["output"] for sample in longform_train]
+Add a dataset as a Tuple in ``utils.py`` to the `single_turn_jsonl_dataset` (when dataset-format
+follows ("instruction", \[optional: "input"], "output")) or to `multi_turn_jsonl_dataset`
+(when dataset-format follows chat format ("messages")):
+```python
+# Datasets that are registered (format: "instruction", [optional: "input"], "output")
+single_turn_jsonl_dataset = [
+    # (dataset-name,        pretty-name,   data location),
+    ("open_math_instruct",  "MATH",        "open_math_instruct.jsonl"),
+]
+
+# Datasets that are registered (format: "messages")
+multi_turn_jsonl_dataset = [
+    # (dataset-name,   pretty-name,    data location,        kwargs),
+    ("flan_v2_90k",    "Flan V2 90k",  "flan_v2_90k.jsonl",  None),
+...
+]
 ```
 
 
