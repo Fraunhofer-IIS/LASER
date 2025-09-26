@@ -1,20 +1,13 @@
-## TODO:
-# 1. write a script to download and preprocess all datasets from the paper
-# 2. save the preprocessed datasets in a folder called "data"
-# 3. link this data folder in the scripts
-
-# Find info:
-# agent instruct sampling with SEED?
-
 import json
 import requests
 from datasets import load_dataset
 
-
-datapoint_id_pattern = "{dataset_id}_v{version}_{language}_{datapoint_id}"
-language = "en"
+# Information for creating unique data IDs
 version = "1"
+language = "en"
+datapoint_id_pattern = "{dataset_id}_v{version}_{language}_{datapoint_id}"
 
+# Define datasets to download and their specific settings
 DATASETS = {
             "alpaca_gpt4":                      {"hf_name": "vicgalle/alpaca-gpt4",
                                                  "input_key": "input"}, 
@@ -72,34 +65,36 @@ DATASETS = {
                                                  "input_key": "input"}, 
 }
 
+# Helper function for data conversion
 def convert_to_chat_format(data):
-        converted = []
-        for sample in data:
-            if "messages" in sample:
-                sample.pop("messages")
-            instruction = sample.pop("instruction")
-            response = sample.pop("output")
-            converted.append({"messages":
-                                [{
-                                    "content": instruction,
-                                    "role": "user"
-                                    },
-                                    {"content": response,
-                                    "role": "assistant"
-                                    }],
-                            **sample
-                            })
-        return converted
+    """Convert data to chat format"""
+    converted = []
+    for sample in data:
+        if "messages" in sample:
+            sample.pop("messages")
+        instruction = sample.pop("instruction")
+        response = sample.pop("output")
+        converted.append({"messages":
+                            [{
+                                "content": instruction,
+                                "role": "user"
+                                },
+                                {"content": response,
+                                "role": "assistant"
+                                }],
+                        **sample
+                        })
+    return converted
 
+# Download and process datasets
 for dataset_name, dataset_info in DATASETS.items():
     if "emnlp25_200k_agentinst_random" in dataset_name:
         continue
     print(f"Processing dataset: {dataset_name}...")
     
     if "hf_name"  in dataset_info:
-        hf_kwargs = dataset_info.get("hf_kwargs", {"split": "train"})
-        
         # Load dataset
+        hf_kwargs = dataset_info.get("hf_kwargs", {"split": "train"})
         data = load_dataset(dataset_info["hf_name"], **hf_kwargs)
         
         # Uniformize column names
@@ -126,11 +121,14 @@ for dataset_name, dataset_info in DATASETS.items():
         data = [x for x in data]
     
     elif "url" in dataset_info:
+        # Download data
         response = requests.get(dataset_info["url"])
     
+        # Convert to list of dicts
         if response.status_code == 200:
             data = response.json()
             
+        # Uniformize column names
         if "input_key" in dataset_info:
             data = [{**sample,"instruction": (sample["instruction"] + "\n" + sample[dataset_info["input_key"]]).strip()} for sample in data]
        
