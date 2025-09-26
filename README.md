@@ -4,6 +4,7 @@ This repository contains the code to run the LASER data selection pipeline and s
 
 ## TODOs
 - write READMEs 
+- add requirements.txt
 - add dataset configs for all datasets created in experiments; add them to `scripts/sample_data`
 - write script (`data/download_data.py`) to download and preprocess datasets used in experiments, place them into `./data`
 - test run repo, as is
