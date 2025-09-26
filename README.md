@@ -2,6 +2,13 @@
 
 This repository contains the code to run the LASER data selection pipeline and scripts to replicate the experiment of our EMNLP 2025 *Findings* paper [[link](https://arxiv.org/abs/2505.22157)].
 
+## TODOs
+- write READMEs 
+- add dataset configs for all datasets created in experiments
+- write script (`data/download_data.py`) to download and preprocess datasets used in experiments, place them into `./data`
+- test run repo, as is
+
+
 ## Setup
 [...]
 
