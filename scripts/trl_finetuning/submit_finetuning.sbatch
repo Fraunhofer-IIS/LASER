@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J finetuning
-#SBATCH --error=/home/pami666g/logs/%j.err
-#SBATCH --output=/home/pami666g/logs/%j.out
+#SBATCH --error=./logs/%j.err
+#SBATCH --output=./logs/%j.out
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:4
@@ -37,8 +37,6 @@ else
 fi
 
 RUN_NAME=${MODEL_PREFIX}_${DATASET_NAME}
-OUTPUT=/data/horse/ws/pami666g-trl_finetuning/sft_models/exp_colm25/${RUN_NAME}
+OUTPUT=./sft_models_emnlp25/${RUN_NAME}
 
-cd /data/horse/ws/pami666g-projects/synthetic-instruction-data-generation/scripts/emnlp25_experiments
-pwd
 bash finetuning.sh ${MODEL} ${TOKENIZER} ${OUTPUT} ${DATASET_NAME}.jsonl
