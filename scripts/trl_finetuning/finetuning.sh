@@ -16,7 +16,9 @@ MODEL=$1
 TOKENIZER=$2
 OUTPUT=$3
 RUN_NAME=$(basename ${OUTPUT})
+
 DATASET=${EXP_DATA_DIR}/$4
+EVAL_DATASET=${EXP_DATA_DIR}/val_agentinst_2k_random.jsonl
 
 if [[ $DATASET == *"_1k"* ]]; then
   BATCH_SIZE=8
@@ -75,6 +77,7 @@ accelerate launch --config_file ${TRL_DIR}/examples/accelerate_configs/deepspeed
                 --num_processes ${N_GPUS} --num_machines ${N_NODES} \
                 ${TRL_DIR}/scripts/sft.py \
                 --dataset_name ${DATASET}  \
+                --dataset_name_eval ${EVAL_DATASET}  \
                 --model_name_or_path ${MODEL} \
                 --attn_implementation flash_attention_2 \
                 --trust_remote_code \
@@ -105,7 +108,6 @@ accelerate launch --config_file ${TRL_DIR}/examples/accelerate_configs/deepspeed
                 --report_to wandb \
                 --run_name ${RUN_NAME} \
                 --neftune_noise_alpha=5 \
-                --dataset_name_eval ${EVAL_DATASET}  \
                 --use_liger \
                 --save_only_model \
                 --save_total_limit 1 \
