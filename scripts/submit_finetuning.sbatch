@@ -39,4 +39,6 @@ fi
 RUN_NAME=${MODEL_PREFIX}_${DATASET_NAME}
 OUTPUT=./sft_models_emnlp25/${RUN_NAME}
 
+cd trl_finetuning/
+
 bash finetuning.sh ${MODEL} ${TOKENIZER} ${OUTPUT} ${DATASET_NAME}.jsonl
