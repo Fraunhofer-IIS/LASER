@@ -810,25 +810,9 @@ class BaseSampler:
             if embeddings.shape[0] < embeddings.shape[1]:
                 print(f"WARNING! To few datapoints for category {category}. Clustering will not be meaningful.")
             
-            try:
-                import faiss
-                faiss_installed = True
-            except:
-                faiss_installed = False
-                print("For very large datasets run `pip install faiss-cpu` to speed up clustering.")
-            
             # cluster
             start_clustering = time()
-            if embeddings.shape[0] > 1_000_000 and faiss_installed:
-                print("Clustering with faiss...")
-                # # faiss is more optimized and GPU-enabled (even though I cannot install the gpu version lol) with pip install faiss-gpu-cu12
-                d = embeddings.shape[1]  # Feature dimension
-                kmeans = faiss.Kmeans(d, num_clusters, niter=20, verbose=True) #, spherical=True, gpu=True)
-                kmeans.train(embeddings.astype(np.float32))
-                _, clusters = kmeans.index.search(embeddings.astype(np.float32), 1)
-                clusters = clusters.flatten()
-
-            elif embeddings.shape[0] > 25_000:
+            if embeddings.shape[0] > 25_000:
                 kmeans = MiniBatchKMeans(n_clusters=num_clusters,
                                          init='k-means++',
                                          max_iter=10, #50,
@@ -853,27 +837,6 @@ class BaseSampler:
             print(f"-"*50)
             print(f"Datapoints per cluster: {len(category_data) / num_clusters}")
             print("#"* 50)
-
-            # # sample from clusters
-            # num_sampled_data = 0
-            # while num_sampled_data < n_target_samples:
-            #     # sort clusters by their max overall_preference value, so that we sample from high-scoring clusters first
-            #     cluster_max_scores = {cluster_id: max(category_data[i]['overall_preference'] for i in np.where(clusters == cluster_id)[0]) for cluster_id in set(clusters)}
-            #     sorted_cluster_ids = sorted(cluster_max_scores, key=cluster_max_scores.get, reverse=True)
-            #     # loop over clusters and sample one dp from each
-            #     for cluster_id in sorted_cluster_ids:
-            #         indices = np.where(clusters == cluster_id)[0]
-            #         if self.scoring_strategy == "random":
-            #             selected_index = random.choice(indices)
-            #         else:
-            #             scores = [category_data[i]['overall_preference'] for i in indices]
-            #             if max(scores) < threshold:
-            #                 continue
-            #             selected_index = indices[np.argmax(scores)]
-            #         self.sampled_data.append(category_data[selected_index])
-            #         num_sampled_data += 1
-            #         if num_sampled_data == n_target_samples:
-            #             break
 
             print("#clusters", len(set(clusters)))
             num_sample_from_cluster = 0

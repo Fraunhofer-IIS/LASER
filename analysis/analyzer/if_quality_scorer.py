@@ -12,7 +12,7 @@ from analyzer.utils import plot_histogram, plot_histogram_per_category
 from typing import List, Dict
 from tqdm import tqdm
 from pydantic import BaseModel
-import regex
+#import regex
 import json
 import re
 import gc
@@ -23,6 +23,25 @@ from analyzer.utils import check_word_length, check_sentence_length, check_parag
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def extract_first_json(text: str):
+    """Extract the first valid JSON object substring from text without regex."""
+    start = text.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    for i, ch in enumerate(text[start:], start=start):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return text[start:i+1]
+                except:
+                    return None
+    return None
+
 
 
 class ConstraintAnswer(BaseModel):
@@ -127,12 +146,13 @@ class IFQualityScorer(object):
             outputs = self.llm.run(prompts=prompts, guided_decoding=self.guided_decoding_params_constraint,
                                    max_tokens=max_new_tokens, temperature=0.0, top_p=0.5)
 
-            json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
+            #json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
 
             for i, instruction in enumerate(user_requests):
                 try:
                     completion = outputs[i]
-                    completion = json_pattern.findall(completion)[0]
+                    #completion = json_pattern.findall(completion)[0]
+                    completion = extract_first_json(completion)
                     completion = json.loads(completion)['answer']
                     constraints_found = self.clean_constraints(completion)
                     constraints_found = self.postprocess_constraints(constraints_found)
@@ -179,14 +199,15 @@ class IFQualityScorer(object):
         if prompts:
             outputs = self.llm.run(prompts=prompts, guided_decoding=self.guided_decoding_params_question,
                                    max_tokens=max_new_tokens, temperature=0.0, top_p=0.5)
-            json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
+            #json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
 
             for i, response in enumerate(system_responses):
                 if i in prompts_with_constraints:
                     prompt_idx = prompts_with_constraints.index(i)
                     try:
                         completion = outputs[prompt_idx]
-                        completion = json_pattern.findall(completion)[0]
+                        #completion = json_pattern.findall(completion)[0]
+                        completion = extract_first_json(completion)
                         completion = json.loads(completion)['answer']
                         constraints_evaluated = completion
                     except:
@@ -232,14 +253,15 @@ class IFQualityScorer(object):
         if prompts:
             outputs = self.llm.run(prompts=prompts, guided_decoding=self.guided_decoding_params_analyze,
                                    max_tokens=max_new_tokens, temperature=0.0, top_p=0.5)
-            json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
+            #json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
 
             for i, instruction in enumerate(user_requests):
                 if i in prompts_to_analyze:
                     prompt_idx = prompts_to_analyze.index(i)
                     try:
                         completion = outputs[prompt_idx]
-                        completion = json_pattern.findall(completion)[0]
+                        #completion = json_pattern.findall(completion)[0]
+                        completion = extract_first_json(completion)
                         score = json.loads(completion)['score'] / 10
                     except:
                         score = 0.5
