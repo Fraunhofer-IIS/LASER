@@ -99,7 +99,7 @@ single_turn_jsonl_dataset = [
     ("open_math_instruct",                              "MATH",                                             "open_math_instruct.jsonl"),
 ]
 
-
+# Datasets that are registered (format: "messages")
 multi_turn_jsonl_dataset = [
     # (dataset-name,                 pretty-name,                                   data location,                          kwargs),
     ("flan_v2_90k",                  "Flan V2 90k",                                 "flan_v2_90k.jsonl",                        None),
