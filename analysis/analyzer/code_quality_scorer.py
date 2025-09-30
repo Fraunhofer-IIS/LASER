@@ -12,7 +12,7 @@ from analyzer.utils import plot_histogram, plot_histogram_per_category
 from typing import List, Dict
 from tqdm import tqdm
 from pydantic import BaseModel
-import regex
+#import regex
 import json
 import nltk
 import math
@@ -116,7 +116,7 @@ class CodeQualityScorer(object):
                                top_p=0.5
                                )
 
-            json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
+            #json_pattern = regex.compile(r'\{(?:[^{}]|(?R))*\}')
 
             for i, instruction in enumerate(user_requests):
                 if i in instructions_to_analyze:

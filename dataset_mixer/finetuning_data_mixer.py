@@ -227,23 +227,6 @@ class BaseSampler:
         confidence = predictions[1][0]  # Extract the confidence score
         return language_code, confidence
 
-    def filter_dataset_by_language(self, samples, language_codes = ["en"]):
-        import fasttext
-        model = fasttext.load_model('models/lid.176.bin')
-        language_codes = [l.lower() for l in language_codes]
-
-        filtered_samples = []
-        for sample in samples:
-            if 'language' not in sample:
-                if 'instruction' in sample:
-                    language_code, confidence = self._identify_language(model, sample['instruction'].replace("\n", " "))
-                else:
-                    language_code, confidence = self._identify_language(model, sample['messages'][0]['content'].replace("\n", " "))
-                sample['language'] = language_code
-                sample['lang_confidence'] = confidence
-            if sample['language'] in language_codes:
-                filtered_samples.append(sample)
-        return filtered_samples
 
     def _add_conversation(self, samples):
         conversational_samples = []
@@ -666,8 +649,6 @@ class BaseSampler:
             sorted_samples = sorted(data, key=lambda x: x['overall_preference'], reverse=True)
         sorted_samples = [copy(item) for item in sorted_samples for _ in range(int(oversampling))] + copy(sorted_samples[:int(len(sorted_samples) * (oversampling - int(oversampling)))])
 
-        if 'language_filter' in dataset_config:
-            sorted_samples = self.filter_dataset_by_language(sorted_samples, dataset_config['language_filter'])
 
         if ('sample_size' in dataset_config and dataset_config['sample_size'] < len(sorted_samples)) \
                 or 'setfit_limits' in dataset_config:
