@@ -1,15 +1,15 @@
-emnlp25_100k_combination_v5_cat:
+emnlp25_25k_dedicated_quality_math_only:
   default_embedding_model: NovaSearch/stella_en_400M_v5
-  scoring_strategy: combination_v2_code_quality
-  sample_size: 100000
+  scoring_strategy: dedicated_quality_code_quality
+  sample_size: 25000
   final_setfit_proportions:
-    Extraction: 0.025
-    Factual QA: 0.025
-    Brainstorming: 0.1
-    Reasoning: 0.1
-    Coding: 0.25
-    Math: 0.25
-    Generation: 0.25
+    Extraction: 0.0
+    Factual QA: 0.0
+    Brainstorming: 0.0
+    Reasoning: 0.0
+    Coding: 0.0
+    Math: 1.0
+    Generation: 0.0
   data:
     - name: alpaca_gpt4
       data_path: DATA_PATH/alpaca_gpt4.jsonl

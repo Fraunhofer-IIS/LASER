@@ -49,13 +49,13 @@ def parse_args():
     parser.add_argument(
         "--analysis_dir",
         type=str,
-        default="/data/horse/ws/luwe911g-nemotron_ws/data/analysis",
+        default="DATA_PATH/analysis",
         help="Where to store the analysis results."
     )
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="/data/horse/ws/luwe911g-nemotron_ws/data",
+        default="DATA_PATH",
         help="Where to store the generated data."
     )
     parser.add_argument(
@@ -67,12 +67,34 @@ def parse_args():
     return parser.parse_args()
 
 
-setfit_categories = ['Math', 'Generation', 'Coding', 'Extraction', 'Reasoning', 'Factual QA', 'Brainstorming']
-colors = ['C0','C1','C2','C3','C4','C5','C6']
+setfit_categories = ['Math', 'Coding', 'Generation', 'Reasoning', 'Brainstorming', 'Factual QA', 'Extraction']
+colors = ['#112977','#25657D','#368770','#44994B','#81A854','#B0B55D','#C4A46F']
 
 COLOR_MAP = {category: color for category, color in zip(setfit_categories + [np.nan,        'no_setfit_label'], 
                                                         colors            + ['lightgrey',   'lightgrey'])}
 
+dataset_names = ['orca_agentinstruct_v1', 'alpaca_gpt4', 'flan_v2_90k', 'ifeval_like_5k', 
+                 'open_math_instruct_2', 'sharegpt_en', 'ultrainteract_coding', 'wizardlm_evol_instruct',
+                 'alpaca', 'longform', 'numina_math_cot_v1_250k', 'conifer_v1', 'dolly_15k', 'daring_anteater',
+                 'tulu_3_sft_mixture_0225']
+
+COLOR_MAP['orca_agentinstruct_v1'] = '#FBB4AE'
+COLOR_MAP['alpaca_gpt4'] = "#9DC1DF"
+COLOR_MAP['flan_v2_90k'] = '#CCEBC5'
+COLOR_MAP['ifeval_like_5k'] = "#7D5B86"
+COLOR_MAP['open_math_instruct_2'] = "#DFDF92"
+COLOR_MAP['sharegpt_en'] = "#CAAF7A"
+COLOR_MAP['ultrainteract_coding'] = "#F8C3DE"
+COLOR_MAP['wizardlm_evol_instruct'] = "#D8CACA"
+
+COLOR_MAP['alpaca'] = "#B7A7DB"
+COLOR_MAP['longform'] = "#85CCC6"
+COLOR_MAP['numina_math_cot_v1_250k'] = "#D3E29C"
+COLOR_MAP['conifer_v1'] = "#9899B1"
+COLOR_MAP['dolly_15k'] = "#CE99B6"
+COLOR_MAP['daring_anteater'] = "#C9B39A"
+
+COLOR_MAP['tulu_3_sft_mixture_0225'] = '#F2F2F2'
 
 class BaseSampler:
     def __init__(self, dataset_name, config):
@@ -81,133 +103,74 @@ class BaseSampler:
         self.all_token_size = 0
         self.data_ids = set()
         self.dataset_name = dataset_name
-        self.metric_names = {'embedding_distance': 'embedding_distance', # how the folder is called vs. how the key is called
+        self.metric_names = {# how the folder is called vs. how the key is called
                              'complexity_scores': 'complexity', 
                              'quality_scores': 'quality', 
-                             'instagger': 'ins_tags', 
-                             'reward_scores': 'reward',
                              'categories_v2': 'setfit_label',
-                             'reward_diff': 'reward_diff',
                              'token_length/instructions': 'inst_length',
                              'token_length/responses': 'resp_length',
+                             'token_length/last_responses': 'last_resp_length',
+                             'code_quality_scores': 'code_quality',
                              'if_quality_scores': 'if_quality',
                              'prm_scores': 'process_reward',
-                             'code_edu_scores': 'code_edu',
-                             'difficulty_scores_2': 'difficulty',
                              'difficulty_v2_scores': 'difficulty_v2',
-                             'code_quality_scores': 'code_quality',
                              }
         self.metric_scores_dir = {val: key for key, val in self.metric_names.items()}
 
         self.config = config
         self._check_data_presence(self.config['data'])
-        self.p_upper_metrics, self.p_lower_metrics = self._get_metric_normalisation_factors(self.config['data'],
-                                                                                  ['complexity', 'quality', 'reward',
-                                                                                   'if_quality', 'process_reward', 'code_edu',
-                                                                                   'code_quality',
-                                                                                   'difficulty', 'difficulty_v2'])
-        self.chromadb_collection = create_collection(collection_name="instruction_embeddings",
-                                                     embedding_model=self.config.pop("default_embedding_model"),
-                                                     device=device)
-        self.max_seq_length = 2048
+        self.norm_models = self._get_metric_normalisation_models(self.config['data'], [
+                                                                                        'complexity', 'quality',
+                                                                                        'if_quality', 'process_reward', 'code_quality',
+                                                                                        'difficulty_v2'
+                                                                                        ])
+        
+        self.set_sampling_strategy()
+        if "embedding" in self.scoring_strategy:
+            self.chromadb_collection = create_collection(collection_name="instruction_embeddings",
+                                                        embedding_model=self.config.pop("default_embedding_model"),
+                                                        device=device)
+        self.max_seq_length = 4096 # 2048
         self.num_devices = args.num_devices
 
     def set_sampling_strategy(self):
         self.scoring_strategy = 'default' if 'scoring_strategy' not in self.config else self.config['scoring_strategy']
 
         if self.scoring_strategy == 'default':
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.4
-            self.quality_weight = 0.4
-            self.complexity_weight = 0.2
+            self.quality_weight = 1.0
+            self.complexity_weight = 0.0
+            self.difficulty_weight = 1.0
+            self.token_length_weight = 0.0
+        elif self.scoring_strategy.startswith('random'):
+            self.quality_weight = 0.0
+            self.complexity_weight = 0.0
             self.difficulty_weight = 0.0
             self.token_length_weight = 0.0
         elif self.scoring_strategy.startswith('longest'):
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
             self.quality_weight = 0.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 0.0
             self.token_length_weight = 1.0
-        elif self.scoring_strategy == 'rewards':
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 1.0
-            self.quality_weight = 0.0
-            self.complexity_weight = 0.0
-            self.difficulty_weight = 0.0
-            self.token_length_weight = 0.0
-        elif self.scoring_strategy == 'rewards+quality':
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.5
-            self.quality_weight = 0.5
-            self.complexity_weight = 0.0
-            self.difficulty_weight = 0.0
-            self.token_length_weight = 0.0
-        elif self.scoring_strategy == 'reward_diff':
-            self.reward_diff_weight = 1.0
-            self.rewards_weight = 0.0
-            self.quality_weight = 0.0
-            self.complexity_weight = 0.0
-            self.difficulty_weight = 0.0
-            self.token_length_weight = 0.0
-        elif self.scoring_strategy == 'difficulty' or self.scoring_strategy == 'difficulty_v2':
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
-            self.quality_weight = 0.0
-            self.complexity_weight = 0.0
-            self.difficulty_weight = 1.0
-            self.token_length_weight = 0.0
-        elif self.scoring_strategy.startswith('no_rewards'):
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
-            self.quality_weight = 0.7
-            self.complexity_weight = 0.3
-            self.difficulty_weight = 0.0
-            self.token_length_weight = 0.0
         elif self.scoring_strategy.startswith('deita'):
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
             self.quality_weight = 1.0
             self.complexity_weight = 1.0
             self.difficulty_weight = 0.0
             self.token_length_weight = 0.0
-        elif self.scoring_strategy.startswith('random'):
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
+        elif self.scoring_strategy == 'difficulty' or self.scoring_strategy == 'difficulty_v2':
             self.quality_weight = 0.0
             self.complexity_weight = 0.0
-            self.difficulty_weight = 0.0
+            self.difficulty_weight = 1.0
             self.token_length_weight = 0.0
-        elif self.scoring_strategy.startswith('quality'):
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
+        elif self.scoring_strategy.startswith('quality') or self.scoring_strategy.startswith('dedicated_quality'):
             self.quality_weight = 1.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 0.0
             self.token_length_weight = 0.0
-        elif self.scoring_strategy.startswith('combination_v'):
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
+        elif self.scoring_strategy.startswith('combination'):
             self.quality_weight = 1.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 1.0
             self.token_length_weight = 0.0
-        elif self.scoring_strategy.startswith('combination'):
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
-            self.quality_weight = 0.5
-            self.complexity_weight = 0.0
-            self.difficulty_weight = 0.5
-            self.token_length_weight = 0.0
-        elif self.scoring_strategy.startswith('dedicated_quality'):
-            self.reward_diff_weight = 0.0
-            self.rewards_weight = 0.0
-            self.quality_weight = 1.0
-            self.complexity_weight = 0.0
-            self.difficulty_weight = 0.0
-            self.token_length_weight = 0.0
-
-
 
     def load_dataset(self, dataset_config):
         with open(dataset_config['data_path']) as finst:
@@ -227,6 +190,23 @@ class BaseSampler:
         confidence = predictions[1][0]  # Extract the confidence score
         return language_code, confidence
 
+    def filter_dataset_by_language(self, samples, language_codes = ["en"]):
+        import fasttext
+        model = fasttext.load_model('models/lid.176.bin')
+        language_codes = [l.lower() for l in language_codes]
+
+        filtered_samples = []
+        for sample in samples:
+            if 'language' not in sample:
+                if 'instruction' in sample:
+                    language_code, confidence = self._identify_language(model, sample['instruction'].replace("\n", " "))
+                else:
+                    language_code, confidence = self._identify_language(model, sample['messages'][0]['content'].replace("\n", " "))
+                sample['language'] = language_code
+                sample['lang_confidence'] = confidence
+            if sample['language'] in language_codes:
+                filtered_samples.append(sample)
+        return filtered_samples
 
     def _add_conversation(self, samples):
         conversational_samples = []
@@ -256,11 +236,7 @@ class BaseSampler:
     def _add_metrics(self, samples, dataset_name):
         for metric_name, metric_clean_name in self.metric_names.items():
             try:
-                if metric_name == "instagger":
-                    with open(f"{args.analysis_dir}/{metric_name}/{dataset_name}.jsonl") as f:
-                        for sample, line in zip(samples, f.readlines()): 
-                            sample.update({metric_clean_name: json.loads(line) if line.strip() != 'None' else None}) 
-                elif metric_name == "categories_v2":
+                if metric_name == "categories_v2":
                     with open(f"{args.analysis_dir}/{metric_name}/{dataset_name}_aggr.csv") as f:
                         for sample, line in zip(samples, f.readlines()):
                             sample.update({metric_clean_name: line.strip() if line.strip() != 'None' else None})
@@ -278,12 +254,7 @@ class BaseSampler:
     def save_metrics(self):
         """Save collective metrics of constructed dataset"""
         for metric_name, metric_clean_name in self.metric_names.items():
-            if metric_name == "instagger":
-                with open(f"{args.analysis_dir}/{metric_name}/{self.dataset_name}.jsonl", "w") as f:
-                    metric_values = [inst.get(metric_clean_name, None) for inst in self.sampled_data]
-                    for value in metric_values:
-                        f.write(json.dumps(value) + "\n")
-            elif metric_name == "categories_v2":
+            if metric_name == "categories_v2":
                 with open(f"{args.analysis_dir}/{metric_name}/{dataset_name}_aggr.csv", "w") as f:
                     metric_values = [inst.get(metric_clean_name, None) for inst in self.sampled_data]
                     for value in metric_values:
@@ -324,7 +295,7 @@ class BaseSampler:
                     json.dump(self.sampled_data, file, indent=4)
                 
     def plot_final_composition(self, by='origin'):
-        """ TODO: plot exact amounts of samples, not just percentages"""
+        """Plot copmositions of constructed dataset"""
         used_keys = [by] 
         results = {key: [instruction.get(key, None) for instruction in self.sampled_data] for key in used_keys}
         results_df = pd.DataFrame(results)
@@ -333,7 +304,8 @@ class BaseSampler:
         plt.pie(counts.values(), labels=counts.keys(), autopct='%1.1f%%', wedgeprops={'linewidth': 0.5, 'edgecolor': 'white'}, textprops={'size': 'small'})
         plt.title({self.dataset_name}, fontsize=12)
         plt.tight_layout()
-        plt.savefig(f"dataset_configs/{self.dataset_name}_{by}.png", bbox_inches="tight")
+        os.makedirs(f"{args.analysis_dir}/final_compositions", exist_ok=True)
+        plt.savefig(f"{args.analysis_dir}/final_compositions/{self.dataset_name}_{by}.png", bbox_inches="tight")
              
     def plot_metrics(self, by='origin'):
         """Plot metrics of constructed dataset"""
@@ -341,16 +313,17 @@ class BaseSampler:
         results = {key: [instruction.get(key, None) for instruction in self.sampled_data] for key in used_keys}
         results['categories'] = [inst.get('setfit_label', 'no_setfit_label') for inst in self.sampled_data]
         results_df = pd.DataFrame(results)
+        hue_order=[item for item in setfit_categories+dataset_names if item in results_df[by].unique()]
 
         # Scores
         for metric_name, metric_name_clean in self.metric_names.items():
-            if metric_name in ["instagger", "categories", "categories_v2"]:
+            if metric_name in ["categories_v2"]:
                 continue
             try:
                 plt.figure(figsize=(8, 6))
-                sns.histplot(data=results_df, x=metric_name_clean, hue=by, multiple="stack")
-                plt.axvline(results_df[metric_name_clean].mean(), color='grey', linestyle='--')
-                plt.text(results_df[metric_name_clean].mean(), 0, f"mean: {results_df[metric_name_clean].mean():.2f}", rotation=90)
+                sns.histplot(data=results_df, x=metric_name_clean, hue=by, palette=COLOR_MAP, hue_order=hue_order, multiple="stack")
+                plt.axvline(results_df[metric_name_clean].mean(), color='black', linewidth=2)
+                plt.text(results_df[metric_name_clean].mean(), 0.5, f"mean: {results_df[metric_name_clean].mean():.2f}", rotation=90, verticalalignment='center')
                 plt.title(self.dataset_name)
                 plt.savefig(f"{args.analysis_dir}/{metric_name}/{self.dataset_name}_by_{by}.png")
             except:
@@ -358,9 +331,17 @@ class BaseSampler:
         
         # Overall preference
         plt.figure(figsize=(8, 6))
-        # plt.xlim(0, 3)
-        plt.yscale("log")
-        sns.histplot(data=results_df, x='overall_preference', hue=by, multiple="stack")
+        if not self.scoring_strategy.startswith('longest') and not self.scoring_strategy.startswith('random'):
+            plt.xlim(0.0, 1.0)
+        ax = sns.histplot(data=results_df, x='overall_preference', hue=by, palette=COLOR_MAP, hue_order=hue_order, multiple="stack")
+        legend = ax.get_legend()
+        handles = legend.legend_handles
+
+        ax.axvline(results_df['overall_preference'].mean(), color='grey', linewidth=1.5, label=f"mean: {results_df['overall_preference'].mean():.2f}")
+        ax.axvline(results_df['overall_preference'].median(), color='grey', linewidth=1.5, linestyle='--', label=f"median: {results_df['overall_preference'].median():.2f}")
+        h, l = ax.get_legend_handles_labels()
+
+        ax.legend(handles=handles+h, labels=hue_order+l, loc="upper right")
         plt.title(self.dataset_name)
         os.makedirs(f"{args.analysis_dir}/overall_preferences", exist_ok=True)
         plt.savefig(f"{args.analysis_dir}/overall_preferences/{self.dataset_name}_by_{by}.png")
@@ -404,125 +385,81 @@ class BaseSampler:
         return (score - p_lower) / (p_upper - p_lower)
 
     def calculate_overall_preference(self, samples, scores_exist = True):
-        """Calculate a simple preference score TODO: this can use some refactoring"""
+
+        # Normalize scores with RobustScaler models
+        print("Normalizing scores with RobustScaler models...")   
+        for metric_clean_name in ["quality", "complexity", "if_quality", "process_reward", "code_quality"]:
+            if metric_clean_name in self.norm_models:
+                print(f"   - {metric_clean_name} scores...")
+                scores = [sample[metric_clean_name] for sample in samples]
+                norm_scores = self.norm_models[metric_clean_name].transform(np.array(scores).reshape(-1, 1)).flatten()
+                for i, sample in enumerate(samples):
+                    if metric_clean_name in sample and sample[metric_clean_name] is not None:
+                        sample[metric_clean_name] = norm_scores[i]
+
+        # Dedicated quality scores per category
+        if "dedicated_quality" in self.scoring_strategy or "combination" in self.scoring_strategy:
+            for sample in samples:
+                if "dedicated_quality" in self.scoring_strategy or "combination" in self.scoring_strategy:
+                    if sample['setfit_label'] == "Generation" or sample['setfit_label'] == "Brainstorming":
+                        sample.update({'quality': sample['if_quality']})
+
+                    elif sample['setfit_label'] == "Math":
+                        sample.update({'quality': sample['process_reward']})
+
+                    elif sample['setfit_label'] == "Coding":
+                        sample.update({'quality': sample['code_quality']})
+
+                    else:   # deita-quality scores as default
+                        sample.update({'quality': sample['quality']})
+
+        print("Scaling scores with min-max...")
+        # Scaling quality, complexity and difficulty scores to [0, 1]
+        for metric_clean_name in ["quality", "complexity", "difficulty_v2"]:
+            print(f"   - {metric_clean_name} scores...")
+            scores = [sample[metric_clean_name] for sample in samples if metric_clean_name in sample and sample[metric_clean_name] is not None]
+            if scores:
+                min_score = min(scores)
+                max_score = max(scores)
+                for i, sample in enumerate(samples):
+                    if metric_clean_name in sample and sample[metric_clean_name] is not None:
+                        curr_score = sample[metric_clean_name]
+                        sample[metric_clean_name] = (curr_score - min_score) / (max_score - min_score)
+
+        print("Updating the overall preference scores...")
         for sample in samples:
             sample['overall_preference'] = 0
 
             if scores_exist and self.scoring_strategy != "random":
-                if "edu_score" in sample:
-                    self.edu_score_weight = 1.0
-                    self.rewards_weight = 0.0
-                    self.quality_weight = 0.0
-                    self.complexity_weight = 0.0
-                else:
-                    self.edu_score_weight = 0.0
-
-                # Dedicated quality scores per category
-                dedicated_quality_score = None
-                if "dedicated_quality" in self.scoring_strategy or "combination" in self.scoring_strategy:
-                    if sample['setfit_label'] == "Generation" or sample['setfit_label'] == "Brainstorming":
-                        dedicated_quality_score = self.min_max_scaling(sample['if_quality'],
-                                                                       self.p_upper_metrics['if_quality'],
-                                                                       self.p_lower_metrics['if_quality'])
-
-                    elif sample['setfit_label'] == "Math":
-                        dedicated_quality_score = self.min_max_scaling(sample['process_reward'],
-                                                                       self.p_upper_metrics['process_reward'],
-                                                                       self.p_lower_metrics['process_reward'])
-
-                    elif sample['setfit_label'] == "Coding":
-                        if "code_quality" in self.scoring_strategy:
-                            dedicated_quality_score = self.min_max_scaling(sample['code_quality'],
-                                                                       self.p_upper_metrics['code_quality'],
-                                                                       self.p_lower_metrics['code_quality'])
-                        else:
-                            dedicated_quality_score = self.min_max_scaling(sample['code_edu'],
-                                                                           self.p_upper_metrics['code_edu'],
-                                                                           self.p_lower_metrics['code_edu'])
-
-                    else:   # deita-quality scores as default
-                        dedicated_quality_score = self.min_max_scaling(sample['quality'],
-                                                                       self.p_upper_metrics['quality'],
-                                                                       self.p_lower_metrics['quality'])
-
                 if self.quality_weight == 1.0 and self.complexity_weight == 1.0:    # deita-style
-                    sample.update({'overall_preference': sample['quality'] * sample['complexity']})
+                    sample['overall_preference'] += sample['quality'] * sample['complexity']
 
-                elif self.quality_weight == 1.0 and self.difficulty_weight == 1.0:    # deita-style
-                    difficulty_score = self.min_max_scaling(sample['difficulty_v2'],
-                                                           self.p_upper_metrics['difficulty_v2'],
-                                                           self.p_lower_metrics['difficulty_v2'])
-                    if dedicated_quality_score < 0 and difficulty_score < 0:
-                        final_score = 0.0
-                    else:
-                        final_score = dedicated_quality_score * difficulty_score
-                    sample.update({'overall_preference': final_score})
+                elif self.quality_weight == 1.0 and self.difficulty_weight == 1.0:    # deita-style     
+                    sample['overall_preference'] += sample['quality'] * sample['difficulty_v2']
 
                 else:
-                    if self.rewards_weight > 0.0:
-                        sample.update({'overall_preference': sample['overall_preference'] + (self.rewards_weight * self.min_max_scaling(sample['reward'],
-                                                                           self.p_upper_metrics['reward'],
-                                                                           self.p_lower_metrics['reward']))})
 
                     if self.quality_weight > 0.0:
-                        if dedicated_quality_score:
-                            sample.update({'overall_preference': sample['overall_preference'] + (
-                                        self.quality_weight * dedicated_quality_score)})
-                        else:   # deita-quality scores as default
-                            sample.update({'overall_preference': sample['overall_preference'] + (
-                                        self.rewards_weight * self.min_max_scaling(sample['quality'],
-                                                                                   self.p_upper_metrics['quality'],
-                                                                                   self.p_lower_metrics['quality']))})
+                        sample['overall_preference'] += self.quality_weight * sample['quality']
 
                     if self.complexity_weight > 0.0:
-                        sample.update({'overall_preference': sample['overall_preference'] + (
-                                    self.rewards_weight * self.min_max_scaling(sample['complexity'],
-                                                                               self.p_upper_metrics['complexity'],
-                                                                               self.p_lower_metrics['complexity']))})
+                        sample['overall_preference'] += self.complexity_weight * sample['complexity']
+
                     if self.difficulty_weight > 0.0:
-                        sample.update({'overall_preference': sample['overall_preference'] + (
-                                    self.difficulty_weight * self.min_max_scaling(sample['difficulty_v2'],
-                                                                                  self.p_upper_metrics['difficulty_v2'],
-                                                                                  self.p_lower_metrics['difficulty_v2']))})
-
-                    if self.edu_score_weight > 0.0:
-                        sample.update({'overall_preference': sample['overall_preference'] + (
-                                self.rewards_weight * self.min_max_scaling(sample['edu_score'],
-                                                                           self.p_upper_metrics['edu_score'],
-                                                                           self.p_lower_metrics['edu_score']))})
-
-                    if self.reward_diff_weight == 1.0:
-                        sample['overall_preference'] += self.reward_diff_weight * sample['reward_diff']
+                        sample['overall_preference'] += self.difficulty_weight * sample['difficulty_v2']
 
                     if self.token_length_weight > 0.0:
-                        sample['overall_preference'] += sample['resp_length']
+                        sample['overall_preference'] += sample['last_resp_length']
 
             else:
                 # raise ValueError(f"Please calculate missing dataset metrics. See sample: \n{sample}")
                 sample['overall_preference'] = 1
+
         return samples
     
     def preprocess_data(self, data, **kwargs):
         """Preprocess data; this is a passthrough function"""
         return data
-
-    def add_gsm8k_formatting(self, messages):
-        formatted_messages = []
-        for turn in messages:
-            if turn['role'] == "user":
-                format = random.randint(0,2)
-                if format == 0:     # No template
-                    formatted_messages.append({'role': turn['role'],
-                                               'content': turn['content']})
-                elif format == 1:
-                    formatted_messages.append({'role': turn['role'],
-                                               'content': "Question: "+turn['content']+"\nAnswer:"})
-                elif format == 2:
-                    formatted_messages.append({'role': turn['role'],
-                                               'content': "Q: " + turn['content'] + "\nA:"})
-            else:
-                formatted_messages.append(turn)
-        return formatted_messages
 
     def postprocess_data(self, ordering, **kwargs):
         """Postprocess data; this is a passthrough function"""
@@ -532,18 +469,7 @@ class BaseSampler:
             if sample['messages'][0]['role'] == "system" and sample['messages'][0]['content'] == "":
                 sample['messages'] = sample['messages'][1:]
 
-        # Formatting
-        if "fmath" in ordering:
-            math_data = [sample for sample in self.sampled_data if sample.get('setfit_label') == "Math"]
-            others_data = [sample for sample in self.sampled_data if sample.get('setfit_label') != "Math"]
-            self.sampled_data = others_data
-            while len(math_data) > 0:
-                sample = math_data.pop()
-                sample['messages'] = self.add_gsm8k_formatting(sample['messages'])
-                self.sampled_data.append(sample)
-
-            random.shuffle(self.sampled_data)
-
+        # Ordering
         if ordering == "shuffle":
             random.shuffle(self.sampled_data)
 
@@ -561,40 +487,6 @@ class BaseSampler:
             for category in setfit_categories:
                 ordered_data += [sample for sample in self.sampled_data if sample.get('setfit_label') == category]
             self.sampled_data = ordered_data
-
-        elif "packing_math" in ordering:
-            math_data = [sample for sample in self.sampled_data if sample.get('setfit_label') == "Math"]
-            others_data = [sample for sample in self.sampled_data if sample.get('setfit_label') != "Math"]
-            math_data_single_turn = [sample for sample in math_data if len(sample['messages']) == 2]
-            math_data_multi_turn = [sample for sample in math_data if len(sample['messages']) > 2]
-
-            self.sampled_data = others_data + math_data_multi_turn
-            half_of_math = len(math_data_single_turn) / 2
-            k = 5
-            while len(math_data_single_turn) > half_of_math:   # Apply this only on 50% of data
-                new_messages = []
-                if len(math_data_single_turn) > (k + 1):
-                    for i in range(k):
-                        new_messages += math_data_single_turn.pop()['messages']
-                else:
-                    for i in range(len(math_data_single_turn) - 1):
-                        new_messages += math_data_single_turn.pop()['messages']
-                last_one = math_data_single_turn.pop()
-                last_one['messages'] = new_messages + last_one['messages']
-
-                self.sampled_data.append(last_one)
-
-            self.sampled_data += math_data_single_turn
-
-            random.shuffle(self.sampled_data)
-
-        prompt_completion = False
-        if prompt_completion:
-            for sample in self.sampled_data:
-                sample['prompt'] = sample['messages'][:-1]
-                sample['completion'] = sample['messages'][-1:]
-                sample.pop('messages')
-
 
     def remove_language_from_id(self, data_id) -> str:
         """ Remove language code from data id, to avoid cross-lingual duplicates. data_id should have pattern: {dataset_id}_v{version}_{language}_{datapoint_id}"""
@@ -627,7 +519,6 @@ class BaseSampler:
         oversampling = 1.0
         if 'oversampling' in dataset_config: oversampling = dataset_config['oversampling']
 
-        self.set_sampling_strategy()
         data = self.calculate_overall_preference(data, sample_scored)
 
         threshold = 0.1
@@ -649,6 +540,8 @@ class BaseSampler:
             sorted_samples = sorted(data, key=lambda x: x['overall_preference'], reverse=True)
         sorted_samples = [copy(item) for item in sorted_samples for _ in range(int(oversampling))] + copy(sorted_samples[:int(len(sorted_samples) * (oversampling - int(oversampling)))])
 
+        if 'language_filter' in dataset_config:
+            sorted_samples = self.filter_dataset_by_language(sorted_samples, dataset_config['language_filter'])
 
         if ('sample_size' in dataset_config and dataset_config['sample_size'] < len(sorted_samples)) \
                 or 'setfit_limits' in dataset_config:
@@ -660,10 +553,6 @@ class BaseSampler:
             while self.check_within_budget(dataset_config, num_sampled_data, num_sampled_tokens) and i < len(sorted_samples) - 1:
                 i += 1
                 sample = sorted_samples[i]
-
-                # Filter out samples longer than max_seq_length
-                if sample["inst_length"] + sample["resp_length"] > self.max_seq_length:
-                    pass
 
                 # Check setfit limits
                 if 'setfit_limits' in dataset_config:
@@ -768,12 +657,6 @@ class BaseSampler:
                 self.sampled_data.extend(category_data)
                 print(f"Sampled: {len(category_data)} for category {category}; Total: {len(self.sampled_data)}")
                 continue
-            
-            # get threshold for preference score
-            # percent_leftover = 1 - (num_clusters / len(category_data))
-            # threshold_percentile = threshold_percentile_clustering * percent_leftover
-            # threshold = np.percentile([dp["overall_preference"] for dp in category_data], int(threshold_percentile * 100))
-            # print(f"{category} threshold. total_samples - target_samples = {percent_leftover}; absolute threshold for overall preference: {threshold}; Percentage of all data below threshold {threshold_percentile}.")
 
             threshold = np.percentile([dp["overall_preference"] for dp in category_data],
                                       int(threshold_percentile_clustering * 100))
@@ -796,8 +679,8 @@ class BaseSampler:
             if embeddings.shape[0] > 25_000:
                 kmeans = MiniBatchKMeans(n_clusters=num_clusters,
                                          init='k-means++',
-                                         max_iter=10, #50,
-                                         batch_size=1024, #2048,
+                                         max_iter=50, #10,
+                                         batch_size=2048, #1024,
                                          random_state=42, n_init='auto',
                                          verbose=0)
                 clusters = kmeans.fit_predict(embeddings)
@@ -845,14 +728,12 @@ class BaseSampler:
                     num_sample_from_cluster += 1
 
             print("final sampling", category, threshold, "num sampled:", num_sample_from_cluster, "total sampled:", len(self.sampled_data))
+            print("#"* 50)
 
             # Free up memory
             del kmeans
             del clusters
             del embeddings
-
-            # print(f"Sampled: {num_sampled_data} for category {category}; Total: {len(self.sampled_data)}")
-            print("#"* 50)
 
     def proportional_sampling(self, sorted_samples, sample_size, setfit_proportions):
         filtered_samples = []
@@ -867,7 +748,6 @@ class BaseSampler:
         return filtered_samples[:sample_size]
 
     def embedding_based_sampling(self, sorted_samples, sample_size, threshold=0.1):
-
         if 'min_distance' in dataset_config: threshold = dataset_config['min_distance']
         filtered_samples = []
         num_sampled_data = 0
@@ -879,10 +759,6 @@ class BaseSampler:
         while i < sample_size and i < len(sorted_samples):
             i += 1
             sample = sorted_samples[i]
-
-            # Filter out samples longer than max_seq_length
-            if sample["inst_length"] + sample["resp_length"] > self.max_seq_length:
-                pass
 
             # Query ChromaDB for similar instructions
             query_text = self.format_prompt(sample)
@@ -908,6 +784,10 @@ class BaseSampler:
 
     def run_sampling(self, config):
         sample_size = config['sample_size']
+
+        # Filter data based on token length (less than max_seq_length)
+        self.all_data = [sample for sample in self.all_data if (sample["inst_length"] + sample["resp_length"]) <= self.max_seq_length]
+        print(f"After filtering based on token length, {len(self.all_data)} samples remain.")
 
         # Sort data points based on selected scoring function
         if self.scoring_strategy == "random":
@@ -943,66 +823,44 @@ class BaseSampler:
                     else:
                         if not os.path.exists(f"{args.analysis_dir}/{metric_name}/{dataset_name}.csv"):
                             print(f"Could not find {metric_name} for {dataset_name} at default path.")
+    
+    def _relevant_metric(self, category, metric_name):
+        """Check if a metric is relevant for a given category"""
+        if category == "Generation" or category == "Brainstorming":
+            return metric_name in ["quality", "complexity", "difficulty_v2", "if_quality", "reward", "edu_score"]
+        elif category == "Math":
+            return metric_name in ["quality", "complexity", "difficulty_v2", "process_reward", "reward", "edu_score"]
+        elif category == "Coding":
+            return metric_name in ["quality", "complexity", "difficulty_v2", "code_quality", "code_edu", "reward", "edu_score"]
+        else:
+            return True  # Default case, all metrics are relevant
 
-    def _get_metric_normalisation_factors(self, data_configs, metric_names):
-        """loads metrics from all datasets and calculates 95th percentile for normalisation"""
-        
+    def _get_metric_normalisation_models(self, data_configs, metric_names):
+        """loads metrics from all datasets and fits PowerTransformer for normalisation"""
+
         all_metric_values = {metric: [] for metric in metric_names}
         # Load metrics from all datasets
         for dataset in data_configs:
             dataset_name = dataset['name']
             for metric_name in metric_names:
                 try:
-                    with open(f"{args.analysis_dir}/{self.metric_scores_dir[metric_name]}/{dataset_name}.csv") as f:
-                        all_metric_values[metric_name] += [float(line.strip()) for line in f.readlines() if line.strip() != 'None' and line.strip() != "NaN"]
+                    with open(f"{args.analysis_dir}/{self.metric_scores_dir[metric_name]}/{dataset_name}.csv") as f, open(f"{args.analysis_dir}/categories_v2/{dataset_name}_aggr.csv") as f_cat:
+                        categories = [line.strip() for line in f_cat.readlines()]
+                        scores = [float(line.strip()) if line.strip() != 'None' and line.strip() != "NaN" else 0.0 for line in f.readlines()]
+                        all_metric_values[metric_name] += [score for i, score in enumerate(scores) if self._relevant_metric(categories[i], metric_name)]
                 except FileNotFoundError:
                     pass
-
-        p_upper_all_metrics = {}
-        p_lower_all_metrics = {}
-        # Calculate n-th percentile for normalisation
+        
+        normalisation_models = {}
+        # Fit normalisation models (RobustScaler) for each metric
+        from sklearn.preprocessing import RobustScaler
         for metric_name in metric_names:
             if all_metric_values[metric_name]:
-                p_upper_all_metrics[metric_name] = np.percentile(all_metric_values[metric_name], 99)
-                p_lower_all_metrics[metric_name] = np.percentile(all_metric_values[metric_name], 1)
+                normalisation_models[metric_name] = RobustScaler(quantile_range=(1.0, 99.0)).fit(np.array(all_metric_values[metric_name]).reshape(-1, 1))
+            else:
+                print(f"No data for metric {metric_name}.")
 
-        print(p_upper_all_metrics, p_lower_all_metrics)
-        return (p_upper_all_metrics, p_lower_all_metrics)
-        
-    def _final_setfit_filtering(self, data, setfit_proportions):
-        """ Take dict of setfit labels and proportions, determine maximal possible dataset-size and filter the dataset accordingly""" 
-        # sort data by setfit label
-        samples_by_setfit = {}
-        for setfit_label in setfit_proportions.keys():
-            samples_by_setfit[setfit_label] = [sample for sample in data if sample['setfit_label'] == setfit_label]
-
-        # determine maximally possible final size based on fixed proportions
-        max_possible_size = int(min([len(samples_by_setfit[setfit_label]) / proportion if proportion > 0 else 10**9 for setfit_label, proportion in setfit_proportions.items()]))
-
-        print(f"Shrinking dataset from {len(data)} to {max_possible_size} samples.")
-
-        # filter data based on overall preference following setfit labels
-        orig_data_size = len(data)
-        old_size_variable_proportions = sum([len(samples) for setfit_label, samples in samples_by_setfit.items() if setfit_proportions[setfit_label] < 0]) / orig_data_size
-        new_size_variable_proportions = (1 - sum([proportion for proportion in setfit_proportions.values() if proportion > 0]))
-                        
-        filtered_data = []
-        for setfit_label, proportion in setfit_proportions.items():
-            if proportion < 0:
-                # if proportion is not specified, keep original proportion of samples
-                proportion = (len(samples_by_setfit[setfit_label]) / orig_data_size / old_size_variable_proportions) * new_size_variable_proportions
-
-            samples_by_setfit[setfit_label] = sorted(samples_by_setfit[setfit_label], key=lambda x: x['overall_preference'], reverse=True)
-            filtered_data.extend(samples_by_setfit[setfit_label][:int(max_possible_size  * proportion)])
-
-        self.all_tags = set()
-        for sample in filtered_data:
-            if "ins_tags" in sample and sample["ins_tags"] is not None:
-                tags = set([tag['tag'] for tag in sample["ins_tags"] if "tag" in tag])
-                self.all_tags.update(tags)
-
-        print(f"Total: {len(filtered_data)}; InsTags: {len(self.all_tags)}")
-        return filtered_data
+        return (normalisation_models)
     
     def init_setfit_limits(self, dataset_config):
         """Set max numbers to be added to dataset per setfit label"""
@@ -1125,9 +983,7 @@ if __name__ == "__main__":
     sampler.save_dataset(train_split=args.train_split)
     sampler.save_metrics()
 
-    # sampler.plot_final_composition(by='origin')
-    # sampler.plot_final_composition(by='language')
-    # sampler.plot_metrics(by='origin')
-    # sampler.plot_metrics(by='categories')
-
-
+    sampler.plot_final_composition(by='origin')
+    sampler.plot_final_composition(by='language')
+    sampler.plot_metrics(by='origin')
+    sampler.plot_metrics(by='categories')

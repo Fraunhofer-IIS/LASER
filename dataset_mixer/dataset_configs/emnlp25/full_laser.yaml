@@ -1,18 +1,14 @@
-emnlp25_100k_combination_v5_cat:
+emnlp25_full_laser:
   default_embedding_model: NovaSearch/stella_en_400M_v5
   scoring_strategy: combination_v2_code_quality
-  sample_size: 100000
-  final_setfit_proportions:
-    Extraction: 0.025
-    Factual QA: 0.025
-    Brainstorming: 0.1
-    Reasoning: 0.1
-    Coding: 0.25
-    Math: 0.25
-    Generation: 0.25
   data:
     - name: alpaca_gpt4
       data_path: DATA_PATH/alpaca_gpt4.jsonl
+      type: self_instruct
+      language: en
+
+    - name: alpaca
+      data_path: DATA_PATH/alpaca_data.jsonl
       type: self_instruct
       language: en
 
@@ -54,6 +50,34 @@ emnlp25_100k_combination_v5_cat:
       data_path: DATA_PATH/emnlp25_200k_agentinst_random.jsonl
       type: agent_instruct
       multi_turn: True
+      language: en
+
+    - name: conifer_v1
+      data_path: DATA_PATH/conifer_v1.jsonl
+      type: self_instruct
+      multi_turn: True
+      language: en
+
+    - name: dolly_15k
+      data_path: DATA_PATH/dolly_15k.jsonl
+      type: self_instruct
+      language: en
+
+    - name: daring_anteater
+      data_path: DATA_PATH/daring_anteater.jsonl
+      type: self_instruct
+      multi_turn: True
+      language: en
+      
+    - name: numina_math_cot_v1_250k
+      data_path: DATA_PATH/numina_math_cot_v1_250k.jsonl
+      type: self_instruct
+      multi_turn: True
+      language: en
+
+    - name: longform
+      data_path: DATA_PATH/longform.jsonl
+      type: self_instruct
       language: en
 
 

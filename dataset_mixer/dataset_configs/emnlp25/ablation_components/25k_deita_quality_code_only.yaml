@@ -12,46 +12,46 @@ emnlp25_25k_deita_quality_code_only:
     Generation: 0.0
   data:
     - name: alpaca_gpt4
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/alpaca_gpt4.jsonl
+      data_path: DATA_PATH/alpaca_gpt4.jsonl
       type: self_instruct
       language: en
 
     - name: flan_v2_90k
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/flan_v2_90k.jsonl
+      data_path: DATA_PATH/flan_v2_90k.jsonl
       type: self_instruct
       multi_turn: True
       language: en
 
     - name: wizardlm_evol_instruct
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/wizardlm_evol_instruct.jsonl
+      data_path: DATA_PATH/wizardlm_evol_instruct.jsonl
       type: self_instruct
       multi_turn: True
       language: en
 
     - name: sharegpt_en
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/sharegpt_en.jsonl
+      data_path: DATA_PATH/sharegpt_en.jsonl
       type: chat
       multi_turn: True
       language: en
 
     - name: ifeval_like_5k
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/ifeval_like_5k.jsonl
+      data_path: DATA_PATH/ifeval_like_5k.jsonl
       type: agent_instruct
       multi_turn: True
       language: en
 
     - name: open_math_instruct_2
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/open_math_instruct_v2_no_augment.jsonl
+      data_path: DATA_PATH/open_math_instruct_v2_no_augment.jsonl
       type: math
       language: en
 
     - name: ultrainteract_coding
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/ultrainteract_coding.jsonl
+      data_path: DATA_PATH/ultrainteract_coding.jsonl
       type: code
       language: en
 
     - name: emnlp25_200k_agentinst_random
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/emnlp25_200k_agentinst_random.jsonl
+      data_path: DATA_PATH/emnlp25_200k_agentinst_random.jsonl
       type: agent_instruct
       multi_turn: True
       language: en

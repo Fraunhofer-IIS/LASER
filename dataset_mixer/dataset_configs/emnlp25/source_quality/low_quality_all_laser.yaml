@@ -1,6 +1,6 @@
-emnlp25_low_quality_all:
+emnlp25_low_quality_all_laser:
   default_embedding_model: NovaSearch/stella_en_400M_v5
-  scoring_strategy: random
+  scoring_strategy: combination_v2_code_quality
   data:
     - name: alpaca_gpt4
       data_path: DATA_PATH/alpaca_gpt4.jsonl

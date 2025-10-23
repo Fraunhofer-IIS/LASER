@@ -3,45 +3,45 @@ emnlp25_low_quality_all:
   scoring_strategy: random
   data:
     - name: alpaca_gpt4
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/alpaca_gpt4.jsonl
+      data_path: DATA_PATH/alpaca_gpt4.jsonl
       type: self_instruct
       language: en
 
     - name: alpaca
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/alpaca_data.jsonl
+      data_path: DATA_PATH/alpaca_data.jsonl
       type: self_instruct
       language: en
 
     - name: flan_v2_90k
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/flan_v2_90k.jsonl
+      data_path: DATA_PATH/flan_v2_90k.jsonl
       type: self_instruct
       multi_turn: True
       language: en
 
     - name: conifer_v1
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/conifer_v1.jsonl
+      data_path: DATA_PATH/conifer_v1.jsonl
       type: self_instruct
       multi_turn: True
       language: en
 
     - name: dolly_15k
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/dolly_15k.jsonl
+      data_path: DATA_PATH/dolly_15k.jsonl
       type: self_instruct
       language: en
 
     - name: daring_anteater
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/daring_anteater.jsonl
+      data_path: DATA_PATH/daring_anteater.jsonl
       type: self_instruct
       multi_turn: True
       language: en
       
     - name: numina_math_cot_v1_250k
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/numina_math_cot_v1_250k.jsonl
+      data_path: DATA_PATH/numina_math_cot_v1_250k.jsonl
       type: self_instruct
       multi_turn: True
       language: en
 
     - name: longform
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/longform.jsonl
+      data_path: DATA_PATH/longform.jsonl
       type: self_instruct
       language: en

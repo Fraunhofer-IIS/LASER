@@ -3,7 +3,7 @@ emnlp25_high_quality_all:
   scoring_strategy: random
   data:
     - name: tulu_3_sft_mixture_0225
-      data_path: /data/horse/ws/luwe911g-nemotron_ws/data/tulu_3_sft_mixture_0225.jsonl
+      data_path: DATA_PATH/tulu_3_sft_mixture_0225.jsonl
       multi_turn: True
       type: sft_mixture
       language: en
