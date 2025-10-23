@@ -229,17 +229,17 @@ def get_analyzer(analysis_type: str, args):
     if analysis_type == "complexity":
         from analyzer.complexity_scorer import ComplexityScorer
         analyzer = ComplexityScorer(deployment=args.model_deployment, num_devices=args.num_devices)
-        output_dir = os.path.join(args.output_dir, "./complexity_scores")
+        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
 
     elif analysis_type == "quality":
         from analyzer.quality_scorer import QualityScorer
         analyzer = QualityScorer(deployment=args.model_deployment, num_devices=args.num_devices)
-        output_dir = os.path.join(args.output_dir, "./quality_scores")
+        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
 
     elif analysis_type == "tokens":
         from analyzer.token_counter import TokenCounter
         analyzer = TokenCounter(args.tokenizer)
-        output_dir = os.path.join(args.output_dir, "./token_length")
+        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
 
     elif analysis_type == "categories_v2":
         from analyzer.task_classifier import TaskClassifier
@@ -254,17 +254,17 @@ def get_analyzer(analysis_type: str, args):
     elif analysis_type == "process_reward_modelling":
         from analyzer.process_reward_modeller import ProcessRewardModeller
         analyzer = ProcessRewardModeller(sep_tok_reason=args.sep_tok_reason)
-        output_dir = os.path.join(args.output_dir, "./prm_scores")
+        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
 
     elif analysis_type == "if_quality":
         from analyzer.if_quality_scorer import IFQualityScorer
         analyzer = IFQualityScorer(num_devices=args.num_devices)
-        output_dir = os.path.join(args.output_dir, "./if_quality_scores")
+        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
 
     elif analysis_type == "code_quality":
         from analyzer.code_quality_scorer import CodeQualityScorer
         analyzer = CodeQualityScorer(num_devices=args.num_devices)
-        output_dir = os.path.join(args.output_dir, "./code_quality_scores")
+        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
     
     elif analysis_type == "dataset_stats":
         analyzer = None
