@@ -1,5 +1,6 @@
 import logging
 import sys
+import numpy as np
 from typing import List
 from tqdm import tqdm
 from analyzer.utils import plot_categories
@@ -12,15 +13,11 @@ logger = logging.getLogger(__name__)
 
 class TaskClassifier(object):
 
-    COLOR_MAP = {
-        'Brainstorming': 'C0',
-        'Coding': 'C1',
-        'Extraction': 'C2',
-        'Factual QA': 'C3',
-        'Generation': 'C4',
-        'Math': 'C5',
-        'Reasoning': 'C6',
-    }
+    setfit_categories = ['Math', 'Coding', 'Generation', 'Reasoning', 'Brainstorming', 'Factual QA', 'Extraction']
+    colors = ['#112977','#25657D','#368770','#44994B','#81A854','#B0B55D','#C4A46F']
+
+    COLOR_MAP = {category: color for category, color in zip(setfit_categories + [np.nan,        'no_setfit_label'], 
+                                                            colors            + ['lightgrey',   'lightgrey'])}
 
     def __init__(self, optimum=False):
         self.model_path = "IIS-NLP-internal/sigma-cls"

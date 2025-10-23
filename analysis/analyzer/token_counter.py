@@ -26,32 +26,40 @@ class TokenCounter(object):
             categories: List[str] = None):
         instruction_length = []
         response_length = []
+        last_response_length = []
         total_size = 0
         for i in tqdm(range(0, len(instructions))):
             inst_length, resp_length = self.infer_length(instructions[i], responses[i])
             instruction_length.append(inst_length)
             response_length.append(resp_length)
+            last_response_length.append(resp_length)
             total_size += inst_length + resp_length
 
         # Conversational dataset, aggregate metrics per sample
         if num_exchanges:
             instruction_length_aggr = []
             response_length_aggr = []
+            last_response_length_aggr = []
             user_msg_idx = 0
             for sample_idx in tqdm(range(0, len(num_exchanges))):
                 instruction_length_per_sample = 0
                 response_length_per_sample = 0
+                last_response_length_per_sample = 0
                 for i in range(num_exchanges[sample_idx]):
                     instruction_length_per_sample += instruction_length[user_msg_idx]
                     response_length_per_sample += response_length[user_msg_idx]
+                    if response_length[user_msg_idx] > 0:
+                        last_response_length_per_sample = response_length[user_msg_idx]
                     user_msg_idx += 1
                 instruction_length_aggr.append(instruction_length_per_sample)
                 response_length_aggr.append(response_length_per_sample)
+                last_response_length_aggr.append(last_response_length_per_sample)
 
         # logger.info(len(instruction_length_aggr), len(response_length_aggr))
 
         os.makedirs(f"{output_dir}/instructions", exist_ok=True)
         os.makedirs(f"{output_dir}/responses", exist_ok=True)
+        os.makedirs(f"{output_dir}/last_responses", exist_ok=True)
 
         # Write token counts to file
         with open(f"{output_dir}/instructions/{dataset_name}.csv", "w") as fout:
@@ -70,16 +78,24 @@ class TokenCounter(object):
                 for length in response_length:
                     fout.write(f"{length}\n")
 
+        with open(f"{output_dir}/last_responses/{dataset_name}.csv", "w") as fout:
+            if num_exchanges:
+                for length in last_response_length_aggr:
+                    fout.write(f"{length}\n")
+            else:
+                for length in last_response_length:
+                    fout.write(f"{length}\n")
+
         with open(f"{output_dir}/{dataset_name}.csv", "w") as fout:
             fout.write(f"{total_size}\n")
 
         logger.info(f"### Total dataset size: {total_size} tokens ({self.tokenizer_path}) ###")
 
         if num_exchanges:
-            return {"instruction_length": instruction_length_aggr, "response_length": response_length_aggr,
+            return {"instruction_length": instruction_length_aggr, "response_length": response_length_aggr, "last_response_length": last_response_length_aggr,
                     "total_size": total_size}
         else:
-            return {"instruction_length": instruction_length, "response_length": response_length,
+            return {"instruction_length": instruction_length, "response_length": response_length, "last_response_length": last_response_length,
                     "total_size": total_size}
 
     def plot(self, scores: Dict, dataset_name: str, dataset_title: str, output_dir: str, categories: List[str]):

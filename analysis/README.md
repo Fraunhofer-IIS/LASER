@@ -1,6 +1,6 @@
 # LASER-analysis: A Repository for Analyzing Instructions
 
-![Description](../assets/LASER_illustration_analysis.png)
+![Description](../assets/LASER_illustration_analysis.jpg)
 
 
 This repository contains code and data for analyzing instruction-following data.

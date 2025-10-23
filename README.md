@@ -1,8 +1,8 @@
-# LASER: Label-Aware Scoring and clutERing 
+# LASER: Label-Aware Scoring and clustERing 
 
 This repository contains the code to run the LASER data selection pipeline and scripts to replicate the experiment of our EMNLP 2025 *Findings* paper [[link](https://arxiv.org/abs/2505.22157)].
 
-![Description](assets/LASER_illustration.png)
+![Description](assets/LASER_illustration.jpg)
 
 
 ## TODOs
