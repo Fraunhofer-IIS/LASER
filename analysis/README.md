@@ -37,7 +37,7 @@ Evaluated on the validation split, the classifier gets 96% macro F1-score.
 ANALYSIS_DIR = ./
 python -m run_analysis --analysis categories_v2 --dataset alpaca_gpt4,flan_v2_90k --output_dir ANALYSIS_DIR
 ```
-2. The categories will be saved in ``ANALYSIS_DIR/categories_v2/``.
+3. The categories will be saved in ``ANALYSIS_DIR/categories_v2/``.
 
 #### Running Instruction/Response Scoring
 
@@ -53,7 +53,7 @@ ANALYSIS_DIR = ./
 ANALYSIS_TYPE = if_quality
 python -m run_analysis --analysis ANALYSIS_TYPE --dataset alpaca_gpt4,flan_v2_90k --output_dir ANALYSIS_DIR
 ```
-2. The scores will be saved in ``ANALYSIS_DIR/ANALYSIS_TYPE_scores/``.
+3. The scores will be saved in ``ANALYSIS_DIR/ANALYSIS_TYPE_scores/``.
 
 
 #### Add a new dataset to be analyzed
