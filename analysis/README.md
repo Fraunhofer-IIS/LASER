@@ -34,7 +34,7 @@ Evaluated on the validation split, the classifier gets 96% macro F1-score.
 1. Activate the setfit environment: `source setfit-env/bin/activate`.
 2. Run classifier e.g.,
 ```bash
-ANALYSIS_DIR = ./
+ANALYSIS_DIR=./
 python -m run_analysis --analysis categories_v2 --dataset alpaca_gpt4,flan_v2_90k --output_dir ANALYSIS_DIR
 ```
 3. The categories will be saved in ``ANALYSIS_DIR/categories_v2/``.
@@ -49,8 +49,8 @@ python -m run_analysis --analysis categories_v2 --dataset alpaca_gpt4,flan_v2_90
 1. Activate the scoring environment: `source scoring-env/bin/activate`.
 2. Run scorer e.g.,
 ```bash
-ANALYSIS_DIR = ./
-ANALYSIS_TYPE = if_quality
+ANALYSIS_DIR=./
+ANALYSIS_TYPE=if_quality
 python -m run_analysis --analysis ANALYSIS_TYPE --dataset alpaca_gpt4,flan_v2_90k --output_dir ANALYSIS_DIR
 ```
 3. The scores will be saved in ``ANALYSIS_DIR/ANALYSIS_TYPE_scores/``.
