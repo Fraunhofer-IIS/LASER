@@ -19,19 +19,14 @@ Evaluated on the validation split, the classifier gets 96% macro F1-score.
 
 ### Running Analysis
 
-#### Prerequisites for Instruction Classification
+#### Prerequisites
 
-1. Create a virtual environment ``python -m venv setfit-env`` then activate `source setfit-env/bin/activate`
-2. Install the dependencies with ``pip install -r setfit_requirements.txt``
-
-#### Prerequisites for Instruction/Response Scoring
-
-1. Create a virtual environment ``python -m venv scoring-env`` then activate `source setfit-env/bin/activate`
-2. Install the dependencies with ``pip install -r scoring_requirements.txt``
+1. Create a virtual environment ``python -m venv analysis-env`` then activate `source analysis-env/bin/activate`
+2. Install the dependencies with ``pip install -r requirements.txt``
 
 #### Running Instruction Classification
 
-1. Activate the setfit environment: `source setfit-env/bin/activate`.
+1. Activate the analysis environment: `source analysis-env/bin/activate`.
 2. Run classifier e.g.,
 ```bash
 ANALYSIS_DIR=./
@@ -46,7 +41,7 @@ python -m run_analysis --analysis categories_v2 --dataset alpaca_gpt4,flan_v2_90
 # if_quality,code_quality,process_reward_modelling,difficulty_v2,complexity,quality,tokens
 ```
 
-1. Activate the scoring environment: `source scoring-env/bin/activate`.
+1. Activate the analysis environment: `source analysis-env/bin/activate`.
 2. Run scorer e.g.,
 ```bash
 ANALYSIS_DIR=./
