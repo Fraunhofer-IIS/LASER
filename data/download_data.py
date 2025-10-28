@@ -1,6 +1,9 @@
 import json
 import requests
+import random
 from datasets import load_dataset
+
+random.seed(42)
 
 # Information for creating unique data IDs
 version = "1"
@@ -32,7 +35,7 @@ DATASETS = {
                                                  "content_key": "value"},
             
             "emnlp25_200k_agentinst_random":    {"hf_name": "microsoft/orca-agentinstruct-1M-v1",
-                                                 "preprocessing": lambda x: x.select(range(200000))}, 
+                                                 "preprocessing": lambda x: random.sample(x, 200000)}, 
             
             "ifeval_like_5k":                   {"hf_name": "HuggingFaceH4/ifeval-like-data"},
 
@@ -88,14 +91,18 @@ def convert_to_chat_format(data):
 
 # Download and process datasets
 for dataset_name, dataset_info in DATASETS.items():
-    if "emnlp25_200k_agentinst_random" in dataset_name:
-        continue
     print(f"Processing dataset: {dataset_name}...")
     
     if "hf_name"  in dataset_info:
         # Load dataset
-        hf_kwargs = dataset_info.get("hf_kwargs", {"split": "train"})
-        data = load_dataset(dataset_info["hf_name"], **hf_kwargs)
+        if "emnlp25_200k_agentinst_random" in dataset_name:
+            data = []
+            dataset = load_dataset(dataset_info["hf_name"])
+            for key, item in dataset.items():
+                data += [{"messages": json.loads(x['messages'])} for x in item]
+        else:
+            hf_kwargs = dataset_info.get("hf_kwargs", {"split": "train"})
+            data = load_dataset(dataset_info["hf_name"], **hf_kwargs)
         
         # Uniformize column names
         if "instruction_key" in dataset_info:
