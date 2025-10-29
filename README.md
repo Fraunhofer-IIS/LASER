@@ -67,7 +67,7 @@ bash scripts/sample_data.sh
 
 
 ### Replicate EMNLP'25 Experiments
-[...]
+Please check `scripts/list_of_emnlp25_experiments.sh`
 
 
 ## Citation
