@@ -115,9 +115,9 @@ class BaseSampler:
                              'complexity_scores': 'complexity', 
                              'quality_scores': 'quality', 
                              'categories_v2': 'setfit_label',
-                             'token_length/instructions': 'inst_length',
-                             'token_length/responses': 'resp_length',
-                             'token_length/last_responses': 'last_resp_length',
+                             'tokens_scores/instructions': 'inst_length',
+                             'tokens_scores/responses': 'resp_length',
+                             'tokens_scores/last_responses': 'last_resp_length',
                              'code_quality_scores': 'code_quality',
                              'if_quality_scores': 'if_quality',
                              'prm_scores': 'process_reward',
@@ -148,37 +148,37 @@ class BaseSampler:
             self.quality_weight = 1.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 1.0
-            self.token_length_weight = 0.0
+            self.tokens_scores_weight = 0.0
         elif self.scoring_strategy.startswith('random'):
             self.quality_weight = 0.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 0.0
-            self.token_length_weight = 0.0
+            self.tokens_scores_weight = 0.0
         elif self.scoring_strategy.startswith('longest'):
             self.quality_weight = 0.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 0.0
-            self.token_length_weight = 1.0
+            self.tokens_scores_weight = 1.0
         elif self.scoring_strategy.startswith('deita'):
             self.quality_weight = 1.0
             self.complexity_weight = 1.0
             self.difficulty_weight = 0.0
-            self.token_length_weight = 0.0
+            self.tokens_scores_weight = 0.0
         elif self.scoring_strategy == 'difficulty' or self.scoring_strategy == 'difficulty_v2':
             self.quality_weight = 0.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 1.0
-            self.token_length_weight = 0.0
+            self.tokens_scores_weight = 0.0
         elif self.scoring_strategy.startswith('quality') or self.scoring_strategy.startswith('dedicated_quality'):
             self.quality_weight = 1.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 0.0
-            self.token_length_weight = 0.0
+            self.tokens_scores_weight = 0.0
         elif self.scoring_strategy.startswith('combination'):
             self.quality_weight = 1.0
             self.complexity_weight = 0.0
             self.difficulty_weight = 1.0
-            self.token_length_weight = 0.0
+            self.tokens_scores_weight = 0.0
 
     def load_dataset(self, dataset_config):
         data_dir = dataset_config['data_path']
@@ -449,7 +449,7 @@ class BaseSampler:
                     if self.difficulty_weight > 0.0:
                         sample['overall_preference'] += self.difficulty_weight * sample['difficulty_v2']
 
-                    if self.token_length_weight > 0.0:
+                    if self.tokens_scores_weight > 0.0:
                         sample['overall_preference'] += sample['last_resp_length']
 
             else:
