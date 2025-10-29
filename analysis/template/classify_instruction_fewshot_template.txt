@@ -1,0 +1,20 @@
+Given the following categories:
+1. Math (math questions)
+   e.g., "Kaleb had 34 books. He sold 45% of them and used the money he earned to buy books that were worth 1/3 of the sold books. How many books did Kaleb have after this?"
+2. Coding (programming tasks or coding questions)
+   e.g., "Design a Python function capable of identifying identical elements present within two separate, sequentially ordered arrays. The task must be accomplished without utilizing any Python built-in functions."
+3. Generation (creative generation tasks with simple/complex constraints, including roleplaying)
+   e.g., "Write a short story (4-5 paragraphs) about a superhero named Magic Mike who saved a woman from a burning building. Make it romantic and have them fall in love."
+4. Reasoning (logical reasoning tasks that are not math or coding)
+   e.g., "Mountain goats are animals. Animals require oxygen in order to live. Mount Sharp is located on Mars. The atmosphere of Mars contains only trace amounts of oxygen. Do mountain goats inhabit the summit of Mount Sharp?"
+5. Brainstorming (information-seeking or recommendation questions requiring explanation, or classification tasks)
+   e.g., "Generate a list of strategies and solutions to encourage and facilitate sustainable transportation options for residents in a major city"
+6. Factual QA (simple factual questions)
+   e.g., "What is a Cumulus cloud and how is it recognizable?"
+7. Extraction (extraction tasks, or question answering, from a given textual passage)
+   e.g., "Extract for me all the following words that start with a vowel and list beside them in parentheses how many times each one is used. [...]"
+
+What is the category of the following task? Please respond only in JSON format (e.g., {{"answer": "Generation", "explanation": "..."}})
+
+### Task ###
+{input}

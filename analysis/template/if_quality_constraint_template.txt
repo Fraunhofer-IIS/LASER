@@ -1,0 +1,59 @@
+### Task ###
+1. Given a USER's prompt, decide whether the constraints from the list below are expressed in the USER's prompt (yes/no).
+2. Provide the expressed constraints in JSON format with the expressed constraint as the key and the constraint type as the value if the respective constraint is expressed.
+
+### List of Constraints ###
+- letter_case, e.g., lowercase, all capitals
+- placeholder_and_postscript
+- repeat_prompt, e.g., repeat the request
+- output_combination, e.g., multiple responses, separate the response
+- choose_output, e.g., choose answer from given options
+- output_format, e.g., json format, markdown format, bulleted list, formatted title, highlighted sections
+- keyword_included, e.g., included words
+- keyword_avoided, e.g., avoided words
+- keyword_frequency, e.g., five hashtags, 'but' two times, letter 'r' at least 3 times
+- language, e.g., english, two languages
+- length, e.g., number of words, number of sentences, number of paragraphs
+- punctuation, e.g., no commas, quotation
+- start_and_ending, e.g., start with 'Hello', end with 'Thank you!'
+- writing_style (e.g., shakespeare, easy-to-read, 5-year-old, persuasive)
+- writing_type (e.g., letter, email, proposal, poem)
+- topic (e.g., love)
+
+### Examples ###
+USER: Please draft a letter of recommendation for a high school student applying to college. The letter should be in formal language, around 250 words and emphasize the student's academic accomplishments, extracurricular involvement, and personal attributes. Do not include the keywords \"excellent\", \"poor\" and \"mediocre\". Include at least one placeholder, such as [name].
+Constraints: {{"answer": {{"around 250 words": "length", "the keywords \"excellent\", \"poor\" and \"mediocre\"": "keyword_avoided", "formal language": "writing_style", "letter of recommendation": "writing_type", "student's academic accomplishments, extracurricular involvement, and personal attributes": "topic", "at least one placeholder": "placeholder_and_postscript"}}}}
+
+USER: Generate a description of a mythical creature in a Shakespearean style, with each sentence exactly one word longer than the previous and composed of compound sentences. The description should include the words horns, fur, and tail. Maximum of five sentences and no commas.
+Constraints: {{"answer": {{"each sentence exactly one word longer than the previous": "length", "five sentences": "length", "no commas": "punctuation", "the words \"horns\", \"fur\" and \"tail\"": "keyword_included", "description of a mythical creature": "topic", "Shakespearean style": "writing_style"}}}}
+
+USER: Translate the following text into three languages, one of which should be French. Separate each translation with a dotted line. Begin each translation with a bullet point and the targeted langauge in parentheses. End the translation with \"Done!\".
+Constraints: {{"answer": {{"three languages, one of which should be French": "language", "Separate each translation with a dotted line": "output_combination", "Begin each translation with a bullet point and the targeted langauge in parentheses": "output_format", "End the translation with \"Done!\"": "start_and_ending", "translation": "writing_type"}}}}
+
+USER: Would you go outside in the rain? First repeat the request word for word without change, then answer with one of the following options: \"My answer is yes.\", \"My answer is no.\", \"My answer is maybe.\".
+Constraints: {{"answer": {{"repeat the request word for word without change": "repeat_prompt", "My answer is yes.": "choose_output", "My answer is no.": "choose_output", "My answer is maybe.": "choose_output"}}}}
+
+USER: George wants to warm his hands quickly by rubbing them. Which skin surface will produce the most heat?
+Please repeat the entire first line above, then give your answer. Your answer must contain one of the following exact phrases:
+ - dry palms
+ - wet palms
+ - palms covered with oil
+Constraints: {{"answer": {{"dry palms": "choose_output", "wet palms": "choose_output", "palms covered with oil": "choose_output", "repeat the entire first line above": "repeat_prompt"}}}}
+
+USER: make a tweet for a businessman's twitter account without using capital letters. Include at least 4 hashtags, starting with '#', and use at least 3 words with all capital letters. Include the keywords 'DELICIOUS' and 'BAD', and start your response with \"Here is your tweet: \".
+Constraints: {{"without using capital letters": "letter_case", "at least 4 hashtags": "keyword_frequency", "the keywords 'DELICIOUS' and 'BAD'": "keyword_included", "tweet": "writing_type", "at least 3 words with all capital letters": "letter_case", "start your response with \"Here is your tweet: \"": "start_and_ending"}}
+
+USER: I work for a trading company named "trance", and they want a catchy tweet. Can you write one that includes the name of the company at least five times? Refrain from using the word trade. Wrap your entire response in double quotation marks.
+Constraints: {{"\"trance\" at least five times": "keyword_frequency", "Wrap your entire response in double quotation marks": "start_and_ending", "tweet": "writing_style", "the word \"trade\"": "keyword_avoided"}}
+
+USER: Expand the following sentence into a formal story of three paragraphs: "The green bag lies on the floor" Your answer must contain a title, wrapped in double angular brackets, i.e. <<title>>, and should not contain any commas. In your response, the word flesh should appear less than 3 times.
+Constraints: {{"three paragraphs": "length", "must contain a title, wrapped in double angular brackets": "output_format", "should not contain any commas": "punctuation", "\"flesh\" less than 3 times": "keyword_frequency", "story": "writing_type"}}
+
+USER: How to stay fit and healthy? Include exactly 5 bullet points in markdown format, without saying the word fit or healthy. In your entire response, the letter t should appear at most once. At the end of your response, add a postscript starting with P.S.
+Constraints: {{"the word \"fit\" or \"healthy\"": "keyword_avoided", "Include exactly 5 bullet points in markdown format": "output_format", "letter 't' should appear at most once": "keyword_frequency", "add a postscript starting with P.S.": "placeholder_and_postscript"}}
+
+USER: Is the sentence "That she is furious he knows about it." grammatically correct? Give me exactly two different responses. Responses should be separated by 6 asterisk symbols: ******.
+Constraints: {{"grammatically correct": "topic", "Responses should be separated by 6 asterisk symbols: ******": "output_combination"}}
+
+### Question ###
+USER: {instruction}

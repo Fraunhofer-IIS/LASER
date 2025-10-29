@@ -1,0 +1,7 @@
+### Task ###
+Given the USER's prompt and ASSISTANT's response below, analyze whether the response addresses USER's intents properly, while respecting any constraints expressed in the prompt. Based on these judgments, provide the final score of response quality in the range of 1 to 10, in JSON format ('score' as key and quality score as value).
+
+USER: {instruction}
+ASSISTANT:
+{output}
+

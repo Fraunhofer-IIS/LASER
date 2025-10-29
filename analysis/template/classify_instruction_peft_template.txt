@@ -1,0 +1,13 @@
+Given the following categories:
+- Math (math questions and math reasoning problems)
+- Coding (programming tasks or coding questions)
+- Generation (creative generation tasks with constraints, including roleplaying)
+- Reasoning (logical deductive reasoning tasks that are neither math nor coding)
+- Brainstorming (information-seeking or recommendation questions requiring explanation, or classification tasks)
+- Factual QA (simple factual questions, without any context)
+- Extraction (extraction tasks, including QA, from a given textual passage)
+
+What is the category of the following task? Please respond only in JSON format (e.g., {{"answer": "Generation"}})
+
+### Task ###
+{input}

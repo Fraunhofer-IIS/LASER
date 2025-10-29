@@ -1,0 +1,12 @@
+### Task ###
+1. Given the following user's PROMPT and system's RESPONSE, please review the code snippet in the RESPONSE.
+2. Focusing on functional correctness, give the final verdict: 'correct' vs 'incorrect'.
+3. Extract the original code snippet, write "no code" if there's no code snippet.
+4. If the original code is correct, simply write "no revision", otherwise propose a code revision to improve the code.
+5. Provide your answer in JSON format, with "review", "final_verdict", "code_original" and "code_revision" as keys.
+
+### User's PROMPT ###
+{instruction}
+
+### System's RESPONSE ###
+{output}

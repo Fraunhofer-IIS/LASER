@@ -1,0 +1,8 @@
+### Task ###
+Answer the following questions. Provide the answer in JSON format with the question number as the key and the answer as the value (true/false).
+Questions:
+{questions}
+
+ASSISTANT:
+{output}
+
