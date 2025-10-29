@@ -5,11 +5,13 @@ emnlp25_low_quality_all_laser:
     - name: alpaca_gpt4
       data_path: DATA_PATH/alpaca_gpt4.jsonl
       type: self_instruct
+      multi_turn: True
       language: en
 
     - name: alpaca
       data_path: DATA_PATH/alpaca_data.jsonl
       type: self_instruct
+      multi_turn: True
       language: en
 
     - name: flan_v2_90k
@@ -27,6 +29,7 @@ emnlp25_low_quality_all_laser:
     - name: dolly_15k
       data_path: DATA_PATH/dolly_15k.jsonl
       type: self_instruct
+      multi_turn: True
       language: en
 
     - name: daring_anteater
@@ -44,4 +47,5 @@ emnlp25_low_quality_all_laser:
     - name: longform
       data_path: DATA_PATH/longform.jsonl
       type: self_instruct
+      multi_turn: True
       language: en

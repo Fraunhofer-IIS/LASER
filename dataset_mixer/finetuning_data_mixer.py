@@ -27,6 +27,8 @@ use_fp16 = True
 device = "cuda" if torch.cuda.is_available() else "cpu"
 random.seed(1234)
 
+DATA_PATH = "../data/"
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -49,13 +51,19 @@ def parse_args():
     parser.add_argument(
         "--analysis_dir",
         type=str,
-        default="DATA_PATH/analysis",
+        default=f"{DATA_PATH}/analysis",
         help="Where to store the analysis results."
+    )
+    parser.add_argument(
+        "--input_dir",
+        type=str,
+        default=f"{DATA_PATH}",
+        help="Where the source data is stored."
     )
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="DATA_PATH",
+        default=f"{DATA_PATH}",
         help="Where to store the generated data."
     )
     parser.add_argument(
@@ -173,7 +181,9 @@ class BaseSampler:
             self.token_length_weight = 0.0
 
     def load_dataset(self, dataset_config):
-        with open(dataset_config['data_path']) as finst:
+        data_dir = dataset_config['data_path']
+        data_dir = data_dir.replace("DATA_PATH", args.input_dir)
+        with open(data_dir) as finst:
             samples = [json.loads(line) for line in finst.readlines()]
         samples = self.preprocess_data(samples, dataset_config=dataset_config)
         samples = self._add_metrics(samples, dataset_config['name'])
@@ -254,6 +264,12 @@ class BaseSampler:
     def save_metrics(self):
         """Save collective metrics of constructed dataset"""
         for metric_name, metric_clean_name in self.metric_names.items():
+            try:
+                os.makedirs(f"{args.analysis_dir}/{metric_name}/")
+            except FileExistsError:
+                # directory already exists
+                pass
+
             if metric_name == "categories_v2":
                 with open(f"{args.analysis_dir}/{metric_name}/{dataset_name}_aggr.csv", "w") as f:
                     metric_values = [inst.get(metric_clean_name, None) for inst in self.sampled_data]
@@ -306,7 +322,8 @@ class BaseSampler:
         plt.tight_layout()
         os.makedirs(f"{args.analysis_dir}/final_compositions", exist_ok=True)
         plt.savefig(f"{args.analysis_dir}/final_compositions/{self.dataset_name}_{by}.png", bbox_inches="tight")
-             
+        plt.close()
+
     def plot_metrics(self, by='origin'):
         """Plot metrics of constructed dataset"""
         used_keys = ['origin', 'overall_preference'] + list(self.metric_names.values())
@@ -345,6 +362,7 @@ class BaseSampler:
         plt.title(self.dataset_name)
         os.makedirs(f"{args.analysis_dir}/overall_preferences", exist_ok=True)
         plt.savefig(f"{args.analysis_dir}/overall_preferences/{self.dataset_name}_by_{by}.png")
+        plt.close()
         
         # Categories
         counts = Counter(results_df['categories'])
@@ -354,6 +372,7 @@ class BaseSampler:
         plt.title({self.dataset_name}, fontsize=12)
         plt.tight_layout()
         plt.savefig(f"{args.analysis_dir}/categories_v2/{self.dataset_name}.png", bbox_inches="tight")
+        plt.close()
         
 
     def format_prompt(self, sample):
@@ -588,8 +607,9 @@ class BaseSampler:
             self.all_data += sorted_samples
             num_sampled_data = len(sorted_samples)
             num_sampled_tokens = 0
-            for i in range(num_sampled_data):
-                num_sampled_tokens += sorted_samples[i]["inst_length"] + sorted_samples[i]["resp_length"]
+            if "inst_length" in sorted_samples[0] and "resp_length" in sorted_samples[0]:
+                for i in range(num_sampled_data):
+                    num_sampled_tokens += sorted_samples[i]["inst_length"] + sorted_samples[i]["resp_length"]
 
         # print("(after) top 20: ", [sample['overall_preference'] for sample in sorted_samples[:20]])
         # print("(after) bottom 20: ", [sample['overall_preference'] for sample in sorted_samples[-20:]])
@@ -786,8 +806,9 @@ class BaseSampler:
         sample_size = config['sample_size']
 
         # Filter data based on token length (less than max_seq_length)
-        self.all_data = [sample for sample in self.all_data if (sample["inst_length"] + sample["resp_length"]) <= self.max_seq_length]
-        print(f"After filtering based on token length, {len(self.all_data)} samples remain.")
+        if "inst_length" in self.all_data[0] and "resp_length" in self.all_data[0]:
+            self.all_data = [sample for sample in self.all_data if (sample["inst_length"] + sample["resp_length"]) <= self.max_seq_length]
+            print(f"After filtering based on token length, {len(self.all_data)} samples remain.")
 
         # Sort data points based on selected scoring function
         if self.scoring_strategy == "random":
@@ -813,7 +834,9 @@ class BaseSampler:
         # check that data exists
         for dataset in data_configs:
             dataset_name = dataset['name']
-            assert os.path.exists(dataset['data_path']), f"Data path {dataset['data_path']} does not exist."
+            data_dir = dataset['data_path']
+            data_dir = data_dir.replace("DATA_PATH", args.input_dir)
+            assert os.path.exists(data_dir), f"Data path {data_dir} does not exist."
         
             # check that metrics exist
             for metric_name in self.metric_names.keys():
@@ -983,7 +1006,10 @@ if __name__ == "__main__":
     sampler.save_dataset(train_split=args.train_split)
     sampler.save_metrics()
 
-    sampler.plot_final_composition(by='origin')
-    sampler.plot_final_composition(by='language')
-    sampler.plot_metrics(by='origin')
-    sampler.plot_metrics(by='categories')
+    try:
+        sampler.plot_final_composition(by='origin')
+        sampler.plot_final_composition(by='language')
+        sampler.plot_metrics(by='origin')
+        sampler.plot_metrics(by='categories')
+    except Exception as e:
+        print(f"Could not plot final composition or metrics: {e}")
