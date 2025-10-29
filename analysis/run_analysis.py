@@ -79,6 +79,10 @@ def get_categories(args, num_exchanges: List[int], dataset_name: str,):
                 categories_aggr = categories
         except:
             pass
+    if categories is not None:
+        print(f"Successfully loaded categories.")
+    else:
+        print(f"Failed to load categories. Proceeding without dedicated scoring.")
     return categories, categories_aggr
 
 
