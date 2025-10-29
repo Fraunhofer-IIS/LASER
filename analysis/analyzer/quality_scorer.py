@@ -130,7 +130,7 @@ class QualityScorer(object):
             request_batch_size: int=512, negative_examples=None,
             categories: List[str] = None):
 
-        to_analyze = zip(instructions, responses)
+        to_analyze = list(zip(instructions, responses))
         to_analyze_idx = [idx for idx, instruction in enumerate(instructions)]
         if categories:
             to_analyze = [(instruction, responses[idx]) for idx, instruction in enumerate(instructions) if

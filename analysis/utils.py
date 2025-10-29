@@ -228,23 +228,26 @@ def parse_args():
 def get_analyzer(analysis_type: str, args):
     if analysis_type == "complexity":
         from analyzer.complexity_scorer import ComplexityScorer
-        analyzer = ComplexityScorer(deployment=args.model_deployment, num_devices=args.num_devices)
-        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
+        analyzer = ComplexityScorer(deployment=args.model_deployment, 
+                                    num_devices=args.num_devices)
+        output_dir = os.path.join(args.output_dir, f"./{analysis_type}_scores")
 
     elif analysis_type == "quality":
         from analyzer.quality_scorer import QualityScorer
-        analyzer = QualityScorer(deployment=args.model_deployment, num_devices=args.num_devices)
-        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
+        analyzer = QualityScorer(categories_to_analyze=["Extraction", "Factual QA", "Reasoning"], 
+                                 deployment=args.model_deployment, 
+                                 num_devices=args.num_devices)
+        output_dir = os.path.join(args.output_dir, f"./{analysis_type}_scores")
 
     elif analysis_type == "tokens":
         from analyzer.token_counter import TokenCounter
         analyzer = TokenCounter(args.tokenizer)
-        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
+        output_dir = os.path.join(args.output_dir, f"./{analysis_type}_scores")
 
     elif analysis_type == "categories_v2":
         from analyzer.task_classifier import TaskClassifier
         analyzer = TaskClassifier()
-        output_dir = os.path.join(args.output_dir, "./categories_v2")
+        output_dir = os.path.join(args.output_dir, f"./categories_v2")
 
     elif analysis_type == "difficulty_v2":
         from analyzer.difficulty_scorer_v2 import DifficultyScorer
@@ -254,17 +257,17 @@ def get_analyzer(analysis_type: str, args):
     elif analysis_type == "process_reward_modelling":
         from analyzer.process_reward_modeller import ProcessRewardModeller
         analyzer = ProcessRewardModeller(sep_tok_reason=args.sep_tok_reason)
-        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
+        output_dir = os.path.join(args.output_dir, f"./{analysis_type}_scores")
 
     elif analysis_type == "if_quality":
         from analyzer.if_quality_scorer import IFQualityScorer
         analyzer = IFQualityScorer(num_devices=args.num_devices)
-        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
+        output_dir = os.path.join(args.output_dir, f"./{analysis_type}_scores")
 
     elif analysis_type == "code_quality":
         from analyzer.code_quality_scorer import CodeQualityScorer
         analyzer = CodeQualityScorer(num_devices=args.num_devices)
-        output_dir = os.path.join(args.output_dir, "./{analysis_type}_scores")
+        output_dir = os.path.join(args.output_dir, f"./{analysis_type}_scores")
     
     elif analysis_type == "dataset_stats":
         analyzer = None
