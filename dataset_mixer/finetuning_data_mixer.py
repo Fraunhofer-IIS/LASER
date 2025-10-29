@@ -291,24 +291,6 @@ class BaseSampler:
         with open(f"{args.output_dir}/{self.dataset_name}.jsonl", "w") as f:
             for inst in self.sampled_data:
                 f.write(json.dumps(inst)+"\n")
-
-        if train_split >= 0.0:
-            random.shuffle(self.sampled_data)
-            path = f'{args.output_dir}/{self.dataset_name}'
-            os.makedirs(path, exist_ok=True)
-
-            if train_split > 0.0 and train_split < 1.0:
-                train_split_size = int(train_split * len(self.sampled_data))
-                with open(path + '/train.json', 'w') as file:
-                    json.dump(self.sampled_data[:train_split_size], file, indent=4)
-                with open(path + '/val.json', 'w') as file:
-                    json.dump(self.sampled_data[train_split_size:], file, indent=4)
-            elif train_split == 1.0:
-                with open(path + '/train.json', 'w') as file:
-                    json.dump(self.sampled_data, file, indent=4)
-            else:
-                with open(path + '/val.json', 'w') as file:
-                    json.dump(self.sampled_data, file, indent=4)
                 
     def plot_final_composition(self, by='origin'):
         """Plot copmositions of constructed dataset"""

@@ -1,10 +1,11 @@
 #!/bin/bash
 
-cd ../dataset_mixer
+cd dataset_mixer/
 
 # TODO: Add all experimental configs here
 DATASET_CONFIGS=(
-    "emnlp2025_25k_random"
+    "emnlp25/100k_random.yaml"
+    "test_random.yaml"
 )
 
 for CONFIG in "${DATASET_CONFIGS[@]}"; do

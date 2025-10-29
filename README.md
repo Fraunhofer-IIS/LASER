@@ -18,29 +18,57 @@ Please check the [analysis](./analysis/).
 
 ## LASER Sampling
 
+### Download datasets
+```bash
+bash scripts/download_data.sh
+```
+The datasets will be stored in `data/`
+
+
 ### Setup
-[...]
-
-
-### Add datasets
-[...]
+Create a virtual environment and install the dependencies with (or use the existing `analysis-env`)
+```bash
+bash scripts/create_analysis_env.sh
+```
 
 
 ### Specify sampling configurations
-[...]
+In a YAML file stored in `dataset_mixer/dataset_configs/`, e.g.,
+```yaml
+test_random:
+  scoring_strategy: random
+  sample_size: 10000
+  data:
+    - name: alpaca_gpt4
+      data_path: DATA_PATH/alpaca_gpt4.jsonl
+      type: self_instruct
+      multi_turn: True
+      language: en
+
+    - name: flan_v2_90k
+      data_path: DATA_PATH/flan_v2_90k.jsonl
+      type: self_instruct
+      multi_turn: True
+      language: en
+
+    - name: sharegpt_en
+      data_path: DATA_PATH/sharegpt_en.jsonl
+      type: chat
+      multi_turn: True
+      language: en
+```
+
+### Run sampling
+1. Add sampling configurations within the `DATASET_CONFIGS=` list in `sample_data.sh`.
+2. Run
+```bash
+bash scripts/sample_data.sh
+```
 
 
 ### Replicate EMNLP'25 Experiments
 [...]
 
-
-## TODOs
-- write READMEs 
-- add `requirements.txt`
-- add dataset configs for all datasets created in experiments; add them to `scripts/sample_data`
-- update script (`data/download_data.py`) with the right preprocessing logic for agent-instruct
-- test run repo, as is
-- clean up code (especially, `dataset_mixer/finetuning_dataset_mixer.py`)
 
 ## Citation
 

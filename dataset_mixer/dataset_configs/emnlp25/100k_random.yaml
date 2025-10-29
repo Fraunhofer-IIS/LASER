@@ -1,5 +1,4 @@
 emnlp25_100k_random:
-  default_embedding_model: NovaSearch/stella_en_400M_v5
   scoring_strategy: random
   sample_size: 100000
   data:

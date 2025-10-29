@@ -1,0 +1,21 @@
+test_random:
+  scoring_strategy: random
+  sample_size: 10000
+  data:
+    - name: alpaca_gpt4
+      data_path: DATA_PATH/alpaca_gpt4.jsonl
+      type: self_instruct
+      multi_turn: True
+      language: en
+
+    - name: flan_v2_90k
+      data_path: DATA_PATH/flan_v2_90k.jsonl
+      type: self_instruct
+      multi_turn: True
+      language: en
+
+    - name: sharegpt_en
+      data_path: DATA_PATH/sharegpt_en.jsonl
+      type: chat
+      multi_turn: True
+      language: en
