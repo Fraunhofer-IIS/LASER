@@ -120,7 +120,7 @@ class BaseSampler:
                              'tokens_scores/last_responses': 'last_resp_length',
                              'code_quality_scores': 'code_quality',
                              'if_quality_scores': 'if_quality',
-                             'prm_scores': 'process_reward',
+                             'process_reward_modelling_scores': 'process_reward',
                              'difficulty_v2_scores': 'difficulty_v2',
                              }
         self.metric_scores_dir = {val: key for key, val in self.metric_names.items()}
@@ -128,8 +128,11 @@ class BaseSampler:
         self.config = config
         self._check_data_presence(self.config['data'])
         self.norm_models = self._get_metric_normalisation_models(self.config['data'], [
-                                                                                        'complexity', 'quality',
-                                                                                        'if_quality', 'process_reward', 'code_quality',
+                                                                                        'complexity', 
+                                                                                        'quality',
+                                                                                        'if_quality', 
+                                                                                        'process_reward', 
+                                                                                        'code_quality',
                                                                                         'difficulty_v2'
                                                                                         ])
         
