@@ -110,7 +110,7 @@ multi_turn_jsonl_dataset = [
     ("emnlp25_200k_agentinst_random","AgentInstruct V1 (200k, random)",             "emnlp25_200k_agentinst_random.jsonl",      None),
     ("numina_math_cot_v1",           "NuminaMath CoT",                              "numina_math_cot_v1.jsonl",                 None),
     ("conifer_v1",                   "Conifer",                                     "conifer_v1.jsonl",                         None),
-    ("open_math_instruct_2",         "OpenMathInstruct-2",                          "open_math_instruct_v2_no_augment.jsonl",   None),
+    ("open_math_instruct_2",         "OpenMathInstruct-2",                          "open_math_instruct_2.jsonl",   None),
     ("ultrainteract_coding",         "UltraInteract (coding)",                      "ultrainteract_coding.jsonl",               None),
     ("dolly_15k",                    "Databricks Dolly 15k",                        "dolly_15k.jsonl",                          None),
     ("alpaca",                       "Stanford Alpaca",                             "alpaca.jsonl",                             None),

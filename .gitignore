@@ -2,3 +2,6 @@ analysis/__pycache__/
 llm/__pycache__/
 analysis/analyzer/__pycache__/
 data/*.jsonl
+data/analysis/
+dataset_mixer/__pycache__/
+.venv/

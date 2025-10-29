@@ -89,6 +89,18 @@ def convert_to_chat_format(data):
                         })
     return converted
 
+def replace_roles_and_contents(messages, role_key, content_key):
+    """Replace roles and contents in messages"""
+    new_messages = []
+    for message in messages:
+        new_message = {}
+        role = message[role_key]
+        role = role.replace("human", "user").replace("gpt", "assistant")
+        new_message["role"] = role
+        new_message["content"] = message[content_key]
+        new_messages.append(new_message)
+    return new_messages
+
 # Download and process datasets
 for dataset_name, dataset_info in DATASETS.items():
     print(f"Processing dataset: {dataset_name}...")
@@ -113,12 +125,8 @@ for dataset_name, dataset_info in DATASETS.items():
             data = data.map(lambda x: {**x,"instruction": (x["instruction"] + "\n" + x[dataset_info["input_key"]]).strip(),})
         if "messages_key" in dataset_info:
             data = data.rename_column(dataset_info["messages_key"], "messages")
-            for sample in data:
-                for i, message in enumerate(sample["messages"]):
-                    if dataset_info["role_key"]:
-                        message["role"] = ["user", "assistant"][i % 2]
-                    if dataset_info["content_key"]:
-                        message["content"] = message.pop(dataset_info["content_key"])
+        if "role_key" in dataset_info and "content_key" in dataset_info:
+            data = data.map(lambda x: {**x, "messages": replace_roles_and_contents(x["messages"], dataset_info["role_key"], dataset_info["content_key"])})
                         
         # Preprocess
         if "preprocessing" in dataset_info:

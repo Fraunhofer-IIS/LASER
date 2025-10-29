@@ -5,11 +5,13 @@ emnlp25_full_laser:
     - name: alpaca_gpt4
       data_path: DATA_PATH/alpaca_gpt4.jsonl
       type: self_instruct
+      multi_turn: True
       language: en
 
     - name: alpaca
       data_path: DATA_PATH/alpaca_data.jsonl
       type: self_instruct
+      multi_turn: True
       language: en
 
     - name: flan_v2_90k
@@ -37,13 +39,15 @@ emnlp25_full_laser:
       language: en
 
     - name: open_math_instruct_2
-      data_path: DATA_PATH/open_math_instruct_v2_no_augment.jsonl
+      data_path: DATA_PATH/open_math_instruct_2.jsonl
       type: math
+      multi_turn: True
       language: en
 
     - name: ultrainteract_coding
       data_path: DATA_PATH/ultrainteract_coding.jsonl
       type: code
+      multi_turn: True
       language: en
 
     - name: emnlp25_200k_agentinst_random
@@ -61,6 +65,7 @@ emnlp25_full_laser:
     - name: dolly_15k
       data_path: DATA_PATH/dolly_15k.jsonl
       type: self_instruct
+      multi_turn: True
       language: en
 
     - name: daring_anteater
@@ -78,6 +83,7 @@ emnlp25_full_laser:
     - name: longform
       data_path: DATA_PATH/longform.jsonl
       type: self_instruct
+      multi_turn: True
       language: en
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ../data/
+cd data/
 
 python download_data.py
 
