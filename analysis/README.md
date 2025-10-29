@@ -29,10 +29,9 @@ Evaluated on the validation split, the classifier gets 96% macro F1-score.
 1. Activate the analysis environment: `source analysis-env/bin/activate`.
 2. Run classifier e.g.,
 ```bash
-ANALYSIS_DIR=./
-python -m run_analysis --analysis categories_v2 --dataset alpaca_gpt4,flan_v2_90k --output_dir ANALYSIS_DIR
+python -m run_analysis --analysis categories_v2 --dataset alpaca_gpt4,flan_v2_90k
 ```
-3. The categories will be saved in ``ANALYSIS_DIR/categories_v2/``.
+3. The categories will be saved in ``../data/analysis/categories_v2/``.
 
 #### Running Instruction/Response Scoring
 
@@ -44,11 +43,10 @@ python -m run_analysis --analysis categories_v2 --dataset alpaca_gpt4,flan_v2_90
 1. Activate the analysis environment: `source analysis-env/bin/activate`.
 2. Run scorer e.g.,
 ```bash
-ANALYSIS_DIR=./
 ANALYSIS_TYPE=if_quality
-python -m run_analysis --analysis ANALYSIS_TYPE --dataset alpaca_gpt4,flan_v2_90k --output_dir ANALYSIS_DIR
+python -m run_analysis --analysis $ANALYSIS_TYPE --dataset alpaca_gpt4,flan_v2_90k
 ```
-3. The scores will be saved in ``ANALYSIS_DIR/ANALYSIS_TYPE_scores/``.
+3. The scores will be saved in ``../data/analysis/ANALYSIS_TYPE_scores/``.
 
 
 #### Add a new dataset to be analyzed
