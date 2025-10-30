@@ -18,7 +18,7 @@ LASER has 3 steps: Use a light-weight classifer (Step 1) to route data to specia
 ## Setup
 ### Install dependencies
 
-To run the LASER pipeline, you will have to install its dependencies. We recommend doing to create a virtual environment via
+To run the LASER pipeline, you will have to install its dependencies. We recommend creating a virtual environment via
 ```bash
 python -m venv laser-env
 source laser-env/bin/activate
@@ -54,7 +54,7 @@ Data must be saved as a `.jsonl` file.
 
 ## Step 1 & 2: Classification & Scoring
 
-In **Step 1 and 2** of the LASER pipeline, we analyse every sample for their domain as well as their quality and difficulty. You can run the analysis pipeline as shown below.
+In **Step 1 and 2** of the LASER pipeline, we analyse every sample for its domain as well as its quality and difficulty. You can run the analysis pipeline as shown below.
 
 ```bash
 cd analysis
