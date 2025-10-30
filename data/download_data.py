@@ -1,9 +1,10 @@
 import json
 import requests
 import random
-from datasets import load_dataset
+import pandas as pd
+from datasets import Dataset,load_dataset,concatenate_datasets
 
-random.seed(42)
+random.seed(1234)
 
 # Information for creating unique data IDs
 version = "1"
@@ -35,7 +36,7 @@ DATASETS = {
                                                  "content_key": "value"},
             
             "emnlp25_200k_agentinst_random":    {"hf_name": "microsoft/orca-agentinstruct-1M-v1",
-                                                 "preprocessing": lambda x: random.sample(x, 200000)}, 
+                                                 "preprocessing": lambda x: preprocess_agentinstruct(x)}, 
             
             "ifeval_like_5k":                   {"hf_name": "HuggingFaceH4/ifeval-like-data"},
 
@@ -101,6 +102,14 @@ def replace_roles_and_contents(messages, role_key, content_key):
         new_messages.append(new_message)
     return new_messages
 
+def preprocess_agentinstruct(dataset):
+    """Preprocess AgentInstruct dataset, random sampling 200k"""
+    with open("emnlp25_200k_agentinst_random_ids.csv") as f:
+        index_map = {sample["data_id"]: i for i, sample in enumerate(dataset)}
+        selected_ids = [index_map[line.strip()] for line in f]
+        data = dataset.select(selected_ids)
+    return data
+
 # Download and process datasets
 for dataset_name, dataset_info in DATASETS.items():
     print(f"Processing dataset: {dataset_name}...")
@@ -108,10 +117,17 @@ for dataset_name, dataset_info in DATASETS.items():
     if "hf_name"  in dataset_info:
         # Load dataset
         if "emnlp25_200k_agentinst_random" in dataset_name:
-            data = []
+            samples = []
             dataset = load_dataset(dataset_info["hf_name"])
+            subset_to_id = {'creative_content': 'cc', 'text_modification': 'mod',
+               'struct2text_flow': 'str2txt', 'rc': 'rc', 'rag': 'rag',
+               'text_extraction': 'txtex', 'mcq': 'mcq', 'follow_up': 'fol',
+               'analytical_reasoning': 'anr', 'fermi': 'fer', 'fs_cot_flow': 'fscot',
+               'code_': 'code', 'brain_teaser': 'brt', 'text_classification': 'txtcls',
+               'open_domain_qa': 'odqa'}
             for key, item in dataset.items():
-                data += [{"messages": json.loads(x['messages'])} for x in item]
+                samples.append(item.map(lambda x, idx: {**x, "messages": json.loads(x['messages']), "data_id": f"agins_v1_{subset_to_id[key]}_en_{idx}", "subset": key}, with_indices=True))
+            data = concatenate_datasets(samples)
         else:
             hf_kwargs = dataset_info.get("hf_kwargs", {"split": "train"})
             data = load_dataset(dataset_info["hf_name"], **hf_kwargs)
