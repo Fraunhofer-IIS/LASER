@@ -21,12 +21,12 @@ Evaluated on the validation split, the classifier gets 96% macro F1-score.
 
 #### Prerequisites
 
-1. Create a virtual environment ``python -m venv analysis-env`` then activate `source analysis-env/bin/activate`
-2. Install the dependencies with ``pip install -r requirements.txt``
+1. The datasets are downloaded and stored in `data/`: `bash scripts/download_data.sh`
+2. The required environment is created and dependencies are installed: `bash scripts/setup.sh`
 
 #### Running Instruction Classification
 
-1. Activate the analysis environment: `source analysis-env/bin/activate`.
+1. Activate the analysis environment: `source .venv/bin/activate`.
 2. Run classifier e.g.,
 ```bash
 python -m run_analysis --analysis categories_v2 --dataset alpaca_gpt4,flan_v2_90k

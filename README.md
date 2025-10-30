@@ -12,11 +12,11 @@ This repository contains the code to run the LASER data selection pipeline and s
 
 ![Description](assets/LASER_illustration.jpg)
 
-## LASER Classification & Scoring
-
-Please check the [analysis](./analysis/).
-
-## LASER Sampling
+### Setup
+Create a virtual environment and install the dependencies with
+```bash
+bash scripts/setup.sh
+```
 
 ### Download datasets
 ```bash
@@ -24,13 +24,11 @@ bash scripts/download_data.sh
 ```
 The datasets will be stored in `data/`
 
+## LASER Classification & Scoring
 
-### Setup
-Create a virtual environment and install the dependencies with (or use the existing `analysis-env`)
-```bash
-bash scripts/create_analysis_env.sh
-```
+Please check the [analysis](./analysis/).
 
+## LASER Sampling
 
 ### Specify sampling configurations
 In a YAML file stored in `dataset_mixer/dataset_configs/`, e.g.,
