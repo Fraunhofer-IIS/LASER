@@ -52,7 +52,7 @@ or **instruction - output** format
 ```
 Data must be saved as a `.jsonl` file.
 
-## LASER Classification & Scoring (Steps 1 & 2)
+## Step 1 & 2: LASER Classification & Scoring
 
 In **Step 1 and 2** of the LASER pipeline, we analyse every sample for their domain as well as their quality and difficulty. You can run the analysis pipeline as shown below.
 
@@ -63,7 +63,7 @@ python -m run_analysis --analysis <type_analysis> --dataset <name_dataset>
 
 Please check the documentation in the [README.md](./analysis/README.md) in the analysis subdirectory for additional details.
 
-## LASER Sampling (Step 3)
+## Step 3: LASER Sampling
 In **Step 3**, we integrate the results from Step 1 and 2 to then sample in a diversity-aware way. To run the sampling pipeline, you have to specify a `dataset_config` and then run the sampling with it. 
 
 ### Specify sampling configurations
@@ -108,7 +108,7 @@ bash scripts/sample_data.sh
 
 
 ### Replicate EMNLP'25 Experiments
-Please check `scripts/list_of_emnlp25_experiments.sh`
+To replicate all of the experiments that we ran in the context of our EMNLP paper, please check `scripts/list_of_emnlp25_experiments.sh`
 
 
 ## Citation
