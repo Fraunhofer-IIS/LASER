@@ -52,7 +52,7 @@ or **instruction - output** format
 ```
 Data must be saved as a `.jsonl` file.
 
-## LASER Classification & Scoring
+## LASER Classification & Scoring (Steps 1 & 2)
 
 In **Step 1 and 2** of the LASER pipeline, we analyse every sample for their domain as well as their quality and difficulty. You can run the analysis pipeline as shown below.
 
@@ -63,7 +63,7 @@ python -m run_analysis --analysis <type_analysis> --dataset <name_dataset>
 
 Please check the documentation in the [README.md](./analysis/README.md) in the analysis subdirectory for additional details.
 
-## LASER Sampling
+## LASER Sampling (Step 3)
 In **Step 3**, we integrate the results from Step 1 and 2 to then sample in a diversity-aware way. To run the sampling pipeline, you have to specify a `dataset_config` and then run the sampling with it. 
 
 ### Specify sampling configurations
