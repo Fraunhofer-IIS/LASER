@@ -1,17 +1,24 @@
 #!/bin/bash
 
 # Data analysis
-jobid=$(sbatch --parsable submit_analysis.sbatch categories_v2)
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch if_quality
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch code_quality
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch process_reward_modelling
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch tagging
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch difficulty_v2
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch complexity
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch quality
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch tokens
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch embeddings
-sbatch --dependency=afterok:${jobid} submit_analysis.sbatch dataset_stats
+SOURCE_DATASETS=(
+    "main"
+    "strong"
+    "weak"
+)
+for SOURCE_DATASET in "${SOURCE_DATASETS[@]}"; do
+    jobid=$(sbatch --parsable submit_analysis.sbatch categories_v2 ${SOURCE_DATASET})
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch if_quality ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch code_quality ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch process_reward_modelling ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch tagging ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch difficulty_v2 ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch complexity ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch quality ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch tokens ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch embeddings ${SOURCE_DATASET}
+    sbatch --dependency=afterok:${jobid} submit_analysis.sbatch dataset_stats ${SOURCE_DATASET}
+done
 
 # Data preparation
 sbatch submit_data_construction.sbatch
