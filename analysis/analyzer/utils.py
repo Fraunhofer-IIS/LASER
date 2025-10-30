@@ -77,7 +77,7 @@ def check_word_length(constraint, response):
             relation = count_relation_mapping[rel]
             break
     if relation == "": relation = "="
-    counts = re.findall("\d+", constraint)
+    counts = re.findall(r"\d+", constraint)
     counts = [int(c) for c in counts]
     word_count = response.count(" ")
 
@@ -113,7 +113,7 @@ def check_sentence_length(constraint, response):
         if num in constraint:
             counts.append(number_mapping[num])
     if relation == "": relation = "="
-    if counts == []: counts = re.findall("\d+", constraint)
+    if counts == []: counts = re.findall(r"\d+", constraint)
     counts = [int(c) for c in counts]
     sent_count = len([sent for sent in re.split(r'[\.?!]', response) if sent.strip() != ""])
 
@@ -155,7 +155,7 @@ def check_paragraph_length(constraint, response):
         if num in constraint:
             counts.append(number_mapping[num])
     if relation == "": relation = "="
-    if counts == []: counts = re.findall("\d+", constraint)
+    if counts == []: counts = re.findall(r"\d+", constraint)
     counts = [int(c) for c in counts]
     para_count = len([p for p in response.split("\n\n") if p.strip() != ""])
 
