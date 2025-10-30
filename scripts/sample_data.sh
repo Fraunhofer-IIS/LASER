@@ -2,7 +2,6 @@
 
 cd dataset_mixer/
 
-# TODO: Add all experimental configs here
 DATASET_CONFIGS=(
     "emnlp25/100k_random.yaml"
     "test_random.yaml"
