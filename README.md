@@ -30,7 +30,7 @@ The data from our experiments can be downloaded to `data/` and preprocessed by r
 ```bash
 python data/download_data.py
 ```
-LASER can also be used with any custom instruction tuning data. Note that data should be stored in `data/` and follow either **conversational json**
+LASER can also be used with any custom instruction tuning data. Note that data should be stored in `data/` and follow either **conversational json**...
 
 ```json
 {
@@ -41,7 +41,7 @@ LASER can also be used with any custom instruction tuning data. Note that data s
   "data_id": "<unique_string>"
 }
 ```
-or **instruction - output** format
+...or **instruction - output** format.
 
 ```json
 {
