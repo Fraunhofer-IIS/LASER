@@ -20,8 +20,8 @@ CATEGORIES = ["Math",
             "Reasoning",
             "Factual QA"]
 
-category_model_map = {"all": "IIS-NLP-internal/qwen3-8B-difficulty-scorer-v2",
-                     # **{category: "IIS-NLP-internal/qwen3-8B-difficulty-scorer-v2" for category in CATEGORIES} # Currently, category specific scorer are not implemented, if we do, add them here
+category_model_map = {"all": "IIS-NLP/difficulty-scorer-8B-v2",
+                     # **{category: "IIS-NLP/difficulty-scorer-8B-v2" for category in CATEGORIES} # Currently, category specific scorer are not implemented, if we do, add them here
                      } 
 
 

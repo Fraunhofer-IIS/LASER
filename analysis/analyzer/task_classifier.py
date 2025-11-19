@@ -20,7 +20,7 @@ class TaskClassifier(object):
                                                             colors            + ['lightgrey',   'lightgrey'])}
 
     def __init__(self, optimum=False):
-        self.model_path = "IIS-NLP-internal/sigma-cls"
+        self.model_path = "IIS-NLP/sigma-cls"
         self.setfit_model = SetFitModel.from_pretrained(self.model_path, trust_remote_code=True)
 
         if optimum:
